@@ -3,6 +3,10 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\Versioned\Versioned;
@@ -49,4 +53,28 @@ class TrafficSplit extends DataObject
         'Title' => 'Traffic split',
         'CookieExpireDays' => 30,
     ];
+
+    public function getCMSFields(): FieldList
+    {
+        $fields = parent::getCMSFields();
+
+        $fields->removeByName([
+            'Title',
+            'CookieExpiry',
+            'EntryPageID',
+        ]);
+
+        $fields->addFieldsToTab('Root.Main', [
+            TextField::create('Title', 'Title'),
+            $cookieExpiryField = NumericField::create('CookieExpiry', 'Cookie expiry (days)'),
+            $entryPageField = TreeDropdownField::create('EntryPageID', 'Entry page', SiteTree::class),
+        ]);
+
+        $cookieExpiryField->setDescription(
+            'Defines the duration of the traffic split content variation choice for website visitor. '
+            . 'This setting should roughly match the duration of the experimentation period for a particular test.'
+        );
+
+        return $fields;
+    }
 }

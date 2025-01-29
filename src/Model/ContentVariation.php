@@ -3,6 +3,7 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\ORM\DataObject;
 
 /**
  * Represents content a single content variation for a specific A/B test setup
@@ -14,7 +15,7 @@ use SilverStripe\CMS\Model\SiteTree;
  * @method TrafficSplit Parent()
  * @method SiteTree VariationPage()
  */
-class ContentVariation
+class ContentVariation extends DataObject
 {
     private static string $table_name = 'LaboratoryContentVariation';
 
