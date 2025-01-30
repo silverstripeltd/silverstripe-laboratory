@@ -3,9 +3,11 @@
 namespace SilverStripe\Laboratory\Admin;
 
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Forms\CompositeValidator;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldImportButton;
+use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Laboratory\Model\TrafficSplit;
 
 class LaboratoryAdmin extends ModelAdmin
@@ -27,11 +29,14 @@ class LaboratoryAdmin extends ModelAdmin
 
     protected function getGridField(): GridField
     {
-        $gridField = parent::getGridField();
+        $this->beforeExtending(
+            'updateGridField',
+            function (GridField $field): void {
+                $this->applyTrafficSplitsManagerConfig($field);
+            }
+        );
 
-        $this->applyTrafficSplitsManagerConfig($gridField);
-
-        return $gridField;
+        return parent::getGridField();
     }
 
     private function applyTrafficSplitsManagerConfig(GridField $gridField): void

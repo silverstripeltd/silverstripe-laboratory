@@ -61,6 +61,14 @@ class TrafficSplit extends DataObject
         'ContentVariations',
     ];
 
+    private static array $cascade_duplicates = [
+        'ContentVariations',
+    ];
+
+    private static array $cascade_deletes = [
+        'ContentVariations',
+    ];
+
     private static array $defaults = [
         'Title' => 'Traffic split',
         'VariationChoiceExpiry' => self::DEFAULT_VARIATION_CHOICE_EXPIRY,
@@ -81,11 +89,11 @@ class TrafficSplit extends DataObject
                 $entryPageField = TreeDropdownField::create('EntryPageID', 'Entry page', SiteTree::class),
             ]);
 
-            $statusField = $this->getStatusField();
+            $statusMessage = $this->getStatusMessage();
 
-            if ($statusField) {
+            if ($statusMessage) {
                 $fields->addFieldsToTab('Root.Main', [
-                    $statusField,
+                    LiteralField::create('StatusMessage', $statusMessage),
                 ]);
             }
 
@@ -164,18 +172,56 @@ class TrafficSplit extends DataObject
      *
      * @return LiteralField|null
      */
-    private function getStatusField(): ?LiteralField
+    private function getStatusMessage(): ?string
     {
-        $entryPage = $this->EntryPage();
+        // We don't have any data to validate yet
+        if (!$this->isInDB()) {
+            return null;
+        }
 
-        if ($this->isPublished() && $entryPage->exists()) {
-            $runningMessage = sprintf(
+        $entryPage = $this->EntryPage();
+        $isTrafficSplitPublished = $this->isPublished();
+
+        if ($isTrafficSplitPublished && $entryPage->exists()) {
+            return sprintf(
                 '<p class="message good">Traffic split is active at <a href="%s" target="_blank">%s</a> page</p>',
                 $entryPage->AbsoluteLink(),
                 $entryPage->Title
             );
+        }
 
-            return LiteralField::create('StatusMessage', $runningMessage);
+        $isEntryPageUsed = $this->isEntryPagesUsed();
+
+        if ($isEntryPageUsed) {
+            return '<p class="message error">Other traffic split is already active on the current entry page</p>';
+        }
+
+        if (!$entryPage->isPublished()) {
+            return '<p class="message warning">Entry page is not published</p>';
+        }
+
+        $contentVariations = $this->ContentVariations();
+
+        if (!$contentVariations->count() < 2) {
+            return '<p class="message warning">Traffic split needs to have at least two content variations</p>';
+        }
+
+        if (!$this->hasValidProbability()) {
+            $totalProbability = $this->getTotalProbability();
+
+            return sprintf(
+                '<p class="message warning">Traffic split needs to have a balanced probability distribution '
+                . '(sum of probabilities across all content variations has to be 100, current value is %d)</p>',
+                $totalProbability,
+            );
+        }
+
+        if (!$this->areAllContentVariationsPagesPublished()) {
+            return '<p class="message warning">All content variation pages need to be published</p>';
+        }
+
+        if (!$isTrafficSplitPublished && $this->isReady()) {
+            return '<p class="message good">Traffic split is ready to be activated</p>';
         }
 
         return null;
@@ -246,6 +292,37 @@ class TrafficSplit extends DataObject
         }
 
         // Check that all content variations are published
+        if (!$this->areAllContentVariationsPagesPublished()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the probability of all content variation rules have a valid setup
+     *
+     * @return bool
+     */
+    private function hasValidProbability(): bool
+    {
+        $totalProbability = $this->getTotalProbability();
+
+        return $totalProbability === 100;
+    }
+
+    private function getTotalProbability(): int
+    {
+        return (int) $this
+            ->ContentVariations()
+            ->sum('Probability');
+    }
+
+    private function areAllContentVariationsPagesPublished(): bool
+    {
+        $contentVariations = $this->ContentVariations();
+
+        // Check that all content variations are published
         foreach ($contentVariations as $contentVariation) {
             $variationPage = $contentVariation->VariationPage();
 
@@ -261,19 +338,5 @@ class TrafficSplit extends DataObject
         }
 
         return true;
-    }
-
-    /**
-     * Check if the probability of all content variation rules have a valid setup
-     *
-     * @return bool
-     */
-    private function hasValidProbability(): bool
-    {
-        $totalProbability = (int) $this
-            ->ContentVariations()
-            ->sum('Probability');
-
-        return $totalProbability === 100;
     }
 }

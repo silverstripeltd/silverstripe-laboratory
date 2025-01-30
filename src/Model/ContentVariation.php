@@ -10,6 +10,7 @@ use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * Represents content a single content variation for a specific A/B test setup
@@ -20,10 +21,15 @@ use SilverStripe\ORM\DataObject;
  * @property int $VariationPageID
  * @method TrafficSplit Parent()
  * @method SiteTree VariationPage()
+ * @mixin Versioned
  */
 class ContentVariation extends DataObject
 {
     private const int DEFAULT_TRAFFIC_RATIO = 50;
+
+    private static array $extensions = [
+        Versioned::class,
+    ];
 
     private static string $table_name = 'LaboratoryContentVariation';
 
