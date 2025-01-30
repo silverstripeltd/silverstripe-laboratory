@@ -56,6 +56,12 @@ class ContentVariation extends DataObject
         'Probability' => self::DEFAULT_TRAFFIC_RATIO,
     ];
 
+    private static array $summary_fields = [
+        'Title' => 'Title',
+        'Probability' => 'Probability',
+        'VariationPage.Title' => 'Variation page title',
+    ];
+
     public function getCMSFields(): FieldList
     {
         $this->beforeUpdateCMSFields(function (FieldList $fields) {

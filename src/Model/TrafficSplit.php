@@ -74,6 +74,12 @@ class TrafficSplit extends DataObject
         'VariationChoiceExpiry' => self::DEFAULT_VARIATION_CHOICE_EXPIRY,
     ];
 
+    private static array $summary_fields = [
+        'Title' => 'Title',
+        'EntryPage.Title' => 'Entry page title',
+        'ContentVariations.Count' => 'Content variations',
+    ];
+
     public function getCMSFields(): FieldList
     {
         $this->beforeUpdateCMSFields(function (FieldList $fields) {
@@ -202,7 +208,7 @@ class TrafficSplit extends DataObject
 
         $contentVariations = $this->ContentVariations();
 
-        if (!$contentVariations->count() < 2) {
+        if ($contentVariations->count() < 2) {
             return '<p class="message warning">Traffic split needs to have at least two content variations</p>';
         }
 
