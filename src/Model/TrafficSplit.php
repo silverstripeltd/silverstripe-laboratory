@@ -8,6 +8,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
@@ -80,6 +81,14 @@ class TrafficSplit extends DataObject
                 $entryPageField = TreeDropdownField::create('EntryPageID', 'Entry page', SiteTree::class),
             ]);
 
+            $statusField = $this->getStatusField();
+
+            if ($statusField) {
+                $fields->addFieldsToTab('Root.Main', [
+                    $statusField,
+                ]);
+            }
+
             $titleField->setDescription(
                 'The CMS title will not be visible on your page, it is used to name your component '
                 . 'so that it can be found easily from within the CMS'
@@ -135,5 +144,136 @@ class TrafficSplit extends DataObject
         );
 
         return parent::getCMSCompositeValidator();
+    }
+
+    public function canPublish($member = null): bool
+    {
+        if (!$this->isReady()) {
+            return false;
+        }
+
+        if ($this->isEntryPagesUsed()) {
+            return false;
+        }
+
+        return $this->canEdit();
+    }
+
+    /**
+     * Determine if any status needs to be communicated via a message
+     *
+     * @return LiteralField|null
+     */
+    private function getStatusField(): ?LiteralField
+    {
+        $entryPage = $this->EntryPage();
+
+        if ($this->isPublished() && $entryPage->exists()) {
+            $runningMessage = sprintf(
+                '<p class="message good">Traffic split is active at <a href="%s" target="_blank">%s</a> page</p>',
+                $entryPage->AbsoluteLink(),
+                $entryPage->Title
+            );
+
+            return LiteralField::create('StatusMessage', $runningMessage);
+        }
+
+        return null;
+    }
+
+    /**
+     * Check to see if other tests are running on the same canonical page as this test is
+     *
+     * @return bool
+     */
+    private function isEntryPagesUsed(): bool
+    {
+        $entryPage = $this->EntryPage();
+
+        // Not used because we don't have an entry page to check yet
+        if (!$entryPage->exists()) {
+            return false;
+        }
+
+        $trafficSplits = self::get()
+            ->filter([
+                // Looking for specific entry page to validate
+                'EntryPageID' => $entryPage->ID,
+                // Exclude the current traffic split as we are interested in usage outside of this split
+                'ID:Not' => $this->ID,
+            ]);
+
+        /** @var TrafficSplit $trafficSplit */
+        foreach ($trafficSplits as $trafficSplit) {
+            // Traffic split is active so the entry page is already in use
+            if ($trafficSplit->isPublished()) {
+                return true;
+            }
+        }
+
+        // We haven't found any other test that uses the entry page
+        return false;
+    }
+
+    /**
+     * Is this traffic split ready to be activated?
+     *
+     * @return bool
+     */
+    private function isReady(): bool
+    {
+        $entryPage = $this->EntryPage();
+        $contentVariations = $this->ContentVariations();
+
+        // Entry page missing
+        if (!$entryPage->exists()) {
+            return false;
+        }
+
+        // Not enough content variations (need at least two for a traffic split)
+        if ($contentVariations->count() < 2 ) {
+            return false;
+        }
+
+        // Invalid total probability
+        if (!$this->hasValidProbability()) {
+            return false;
+        }
+
+        // Check that the entry page is published
+        if (!$entryPage->isPublished()) {
+            return false;
+        }
+
+        // Check that all content variations are published
+        foreach ($contentVariations as $contentVariation) {
+            $variationPage = $contentVariation->VariationPage();
+
+            // Variation page missing
+            if (!$variationPage->exists()) {
+                return false;
+            }
+
+            // Variation page not published
+            if (!$variationPage->isPublished()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the probability of all content variation rules have a valid setup
+     *
+     * @return bool
+     */
+    private function hasValidProbability(): bool
+    {
+        $totalProbability = (int) $this
+            ->ContentVariations()
+            ->sum('Probability');
+
+        return $totalProbability === 100;
     }
 }
