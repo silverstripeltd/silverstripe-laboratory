@@ -1,3 +1,6 @@
 ---
 Name: silverstripe-laboratory
 ---
+SilverStripe\CMS\Model\SiteTree:
+  extensions:
+    - SilverStripe\Laboratory\Extension\TrafficSplitSiteTreeExtension
