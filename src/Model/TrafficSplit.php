@@ -14,6 +14,7 @@ use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\Versioned\Versioned;
 
@@ -171,6 +172,34 @@ class TrafficSplit extends DataObject
         }
 
         return $this->canEdit();
+    }
+
+    /**
+     * Format the datetime of the end of the traffic split active period
+     *
+     * @return string
+     */
+    public function getActivationEndDate(): string
+    {
+        return Versioned::withVersionedMode(function (): string {
+            Versioned::set_stage(Versioned::LIVE);
+
+            /** @var TrafficSplit $trafficSplit */
+            $trafficSplit = TrafficSplit::get()->byID($this->ID);
+
+            $publishedAt = $trafficSplit
+                ? $trafficSplit->LastEdited
+                : DBDatetime::now()->Rfc2822();
+
+            /** @var DBDatetime $publishDate */
+            $publishDate = DBDatetime::create_field('Datetime', $publishedAt);
+            $publishDate->modify(sprintf('+%d day', $this->VariationChoiceExpiry));
+
+            $formatter = $publishDate->getFormatter();
+            $formatter->setPattern(DBDatetime::ISO_DATETIME_NORMALISED);
+
+            return $formatter->format($publishDate->getTimestamp());
+        });
     }
 
     /**
