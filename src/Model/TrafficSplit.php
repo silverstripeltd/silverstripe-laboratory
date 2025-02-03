@@ -316,7 +316,7 @@ class TrafficSplit extends DataObject
         }
 
         // Not enough content variations (need at least two for a traffic split)
-        if ($contentVariations->count() < self::MINIMUM_CONTENT_VARIATIONS ) {
+        if ($contentVariations->count() < self::MINIMUM_CONTENT_VARIATIONS) {
             return false;
         }
 
