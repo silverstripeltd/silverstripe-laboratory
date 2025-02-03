@@ -1,0 +1,25 @@
+SilverStripe\CMS\Model\SiteTree:
+  entry-page1:
+    Title: 'Entry page 1'
+    URLSegment: 'entry-page1'
+  variation-page1:
+    Title: 'Variation page 1'
+    URLSegment: 'variation-page1'
+  variation-page2:
+    Title: 'Variation page 2'
+    URLSegment: 'variation-page2'
+
+SilverStripe\Laboratory\Model\TrafficSplit:
+  traffic-split1:
+    Title: 'Traffic split 1'
+    EntryPage: =>SilverStripe\CMS\Model\SiteTree.entry-page1
+
+SilverStripe\Laboratory\Model\ContentVariation:
+  content-variation1:
+    Title: 'Content variation 1'
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split1
+    VariationPage: =>SilverStripe\CMS\Model\SiteTree.variation-page1
+  content-variation2:
+    Title: 'Content variation 2'
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split1
+    VariationPage: =>SilverStripe\CMS\Model\SiteTree.variation-page2
