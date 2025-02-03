@@ -17,11 +17,11 @@ class TrafficSplitMiddleware implements HTTPMiddleware
         $service = TrafficSplitService::singleton();
 
         // Elemental content variation is disabled
-        if (!$service->config()->get('element_variation_enabled')) {
+        if (!$service->getElementVariationEnabled()) {
             return $delegate($request);
         }
 
-        $paramName = (string) $service->config()->get('traffic_split_marker');
+        $paramName = $service->getTrafficSplitMarker();
 
         // We don't have the param name, so we are unable to determine content variation
         if (!$paramName) {

@@ -34,7 +34,7 @@ class TrafficSplitService implements Resettable
      * @var string
      * @config
      */
-    private static string $traffic_split_cookie_mame = 'laboratory-traffic-split';
+    private static string $traffic_split_cookie_name = 'laboratory-traffic-split';
 
     /**
      * @var bool
@@ -60,6 +60,26 @@ class TrafficSplitService implements Resettable
     public static function reset(): void
     {
         self::singleton()->clearData();
+    }
+
+    public function getTrafficSplitMarker(): string
+    {
+        return (string) $this->config()->get('traffic_split_marker');
+    }
+
+    public function getTrafficSplitCookieName(): string
+    {
+        return (string) $this->config()->get('traffic_split_cookie_name');
+    }
+
+    public function getElementVariationEnabled(): bool
+    {
+        return (bool) $this->config()->get('element_variation_enabled');
+    }
+
+    public function getElementPrimaryVariationName(): string
+    {
+        return (string) $this->config()->get('element_primary_variation_name');
     }
 
     public function getContentVariationIdentifier(): string
@@ -93,7 +113,7 @@ class TrafficSplitService implements Resettable
         // Default behaviour: If there's no content variation query param included,
         // we only need to show the ones that have no content variation identifier or are the primary variant
         $identifier = $this->getContentVariationIdentifier();
-        $defaultIdentifier = (string) TrafficSplitService::config()->get('element_primary_variation_name');
+        $defaultIdentifier = TrafficSplitService::singleton()->getElementPrimaryVariationName();
 
         // We don't have an identifier set so we will fall back on the default
         if (!$identifier) {
@@ -133,6 +153,23 @@ class TrafficSplitService implements Resettable
         $identifierData = $this->formatIdentifiers($identifierData);
 
         return $this->serialiseIdentifierData($identifierData);
+    }
+
+    /**
+     * Get all secondary variation identifiers (distinct list)
+     *
+     * @param SiteTree $page
+     * @return array
+     * @throws Exception
+     */
+    public function getSecondaryVariationIdentifiers(SiteTree $page): array
+    {
+        $identifiers = $this->getValidIdentifiers($page);
+        $primaryIdentifier = $this->getElementPrimaryVariationName();
+
+        return array_diff($identifiers, [
+            $primaryIdentifier,
+        ]);
     }
 
     /**
@@ -186,6 +223,11 @@ class TrafficSplitService implements Resettable
      */
     private function findValidIdentifiers(SiteTree $page): array
     {
+        // Page doesn't have any content blocks on it
+        if (!$page->hasExtension(ElementalAreasExtension::class)) {
+            return [];
+        }
+
         $area = $page->ElementalArea();
 
         /** @var HasManyList $blocks */
@@ -264,12 +306,14 @@ class TrafficSplitService implements Resettable
         // Sort identifiers & remove duplicates
         $identifiers = array_unique($identifiers);
         sort($identifiers, SORT_STRING);
-        $defaultIdentifier = (string) $this->config()->get('element_primary_variation_name');
+        $primaryIdentifier = $this->getElementPrimaryVariationName();
 
         // Always put primary variation first
-        if (in_array($defaultIdentifier, $identifiers)) {
-            $identifiers = array_diff($identifiers, [$defaultIdentifier]);
-            array_unshift($identifiers, $defaultIdentifier);
+        if (in_array($primaryIdentifier, $identifiers)) {
+            $identifiers = array_diff($identifiers, [
+                $primaryIdentifier,
+            ]);
+            array_unshift($identifiers, $primaryIdentifier);
         }
 
         return $identifiers;

@@ -35,7 +35,7 @@ class TrafficSplitElementalAreaExtension extends Extension
         $page = $area->getOwnerPage();
 
         // Elemental content variation is disabled
-        if (!TrafficSplitService::config()->get('element_variation_enabled')) {
+        if (!TrafficSplitService::singleton()->getElementVariationEnabled()) {
             return $area->ElementControllers();
         }
 

@@ -40,7 +40,6 @@ class TrafficSplitSiteTreeExtension extends Extension
             return '';
         }
 
-        $owner = $this->getOwner();
         $trafficSplit = $this->getActiveTrafficSplit();
 
         if (!$trafficSplit) {
@@ -49,7 +48,7 @@ class TrafficSplitSiteTreeExtension extends Extension
 
         $service = TrafficSplitService::singleton();
         $variationData = [];
-        $marker = (string) $service->config()->get('traffic_split_marker');
+        $marker = $service->getTrafficSplitMarker();
         $contentVariations = $trafficSplit->ContentVariations();
 
         foreach ($contentVariations as $contentVariation) {
@@ -66,8 +65,10 @@ class TrafficSplitSiteTreeExtension extends Extension
             ];
         }
 
-        $cookieName = (string) $service->config()->get('traffic_split_cookie_mame');
-        $cookieData = sprintf('%s-%d', $cookieName, $trafficSplit->ID);
+        // Make sure cookie name has a distinct key so subsequent changes to traffic split
+        // will cause a new cookie name to be issues
+        $cookieName = $service->getTrafficSplitCookieName();
+        $cookieData = sprintf('%s-%d-%d', $cookieName, $trafficSplit->ID, $trafficSplit->Version);
 
         $data = [
             'marker' => $marker,

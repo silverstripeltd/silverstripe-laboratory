@@ -27,11 +27,11 @@ class VariationIdentifierElementExtension extends Extension
         $service = TrafficSplitService::singleton();
 
         // Elemental content variation is disabled
-        if (!$service->config()->get('element_variation_enabled')) {
+        if (!$service->getElementVariationEnabled()) {
             return;
         }
 
-        $primaryVariationName = (string) $service->config()->get('element_primary_variation_name');
+        $primaryVariationName = $service->getElementPrimaryVariationName();
         $primaryVariationMessage = sprintf(
             'To use a block as a primary variation block, '
             . 'please ensure to use "%s" as the variation identifier.',
