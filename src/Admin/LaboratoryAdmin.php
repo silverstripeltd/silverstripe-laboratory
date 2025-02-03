@@ -3,11 +3,9 @@
 namespace SilverStripe\Laboratory\Admin;
 
 use SilverStripe\Admin\ModelAdmin;
-use SilverStripe\Forms\CompositeValidator;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldImportButton;
-use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Laboratory\Model\TrafficSplit;
 
 class LaboratoryAdmin extends ModelAdmin

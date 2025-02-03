@@ -25,6 +25,8 @@ use SilverStripe\Versioned\Versioned;
  */
 class ContentVariation extends DataObject
 {
+    private const int MINIMUM_TRAFFIC_RATIO = 1;
+    private const int MAXIMUM_TRAFFIC_RATIO = 99;
     private const int DEFAULT_TRAFFIC_RATIO = 50;
 
     private static array $extensions = [
@@ -90,12 +92,18 @@ class ContentVariation extends DataObject
                     ->sum('Probability')
                 : 0;
 
-            $message = sprintf('Probability of this content variation being selected for website visitors is percentage points (1 to 99). '
-                . 'The sum of all probabilities in this test is currently %d out of 100.', $totalProbability);
+            $message = sprintf(
+                'Probability of this content variation being selected for website visitors in percentage '
+                . 'points (%d to %d). The sum of all probabilities in this test is currently %d out of %d.',
+                self::MINIMUM_TRAFFIC_RATIO,
+                self::MAXIMUM_TRAFFIC_RATIO,
+                $totalProbability,
+                TrafficSplit::TOTAL_PROBABILITY,
+            );
             $probabilityField
                 ->setHTML5(true)
-                ->setAttribute('min', 1)
-                ->setAttribute('max', 99)
+                ->setAttribute('min', self::MINIMUM_TRAFFIC_RATIO)
+                ->setAttribute('max', self::MAXIMUM_TRAFFIC_RATIO)
                 ->setAttribute('placeholder', self::DEFAULT_TRAFFIC_RATIO)
                 ->setDescription($message)
             ;
