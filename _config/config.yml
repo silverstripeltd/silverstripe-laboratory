@@ -4,3 +4,19 @@ Name: silverstripe-laboratory
 SilverStripe\CMS\Model\SiteTree:
   extensions:
     - SilverStripe\Laboratory\Extension\TrafficSplitSiteTreeExtension
+
+DNADesign\Elemental\Models\BaseElement:
+  extensions:
+    - SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension
+
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Control\Director:
+    properties:
+      Middlewares:
+        LaboratoryTrafficSplitMiddleware: '%$LaboratoryTrafficSplitMiddleware'
+  LaboratoryTrafficSplitMiddleware:
+    class: 'SilverStripe\Laboratory\Middleware\TrafficSplitMiddleware'
+
+SilverStripe\Laboratory\Service\TrafficSplitService:
+  # TODO remove this as it should be disabled by default
+  element_variation_enabled: true

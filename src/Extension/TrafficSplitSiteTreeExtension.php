@@ -7,6 +7,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extension;
 use SilverStripe\Laboratory\Model\ContentVariation;
 use SilverStripe\Laboratory\Model\TrafficSplit;
+use SilverStripe\Laboratory\Service\TrafficSplitService;
 use SilverStripe\ORM\HasManyList;
 
 /**
@@ -18,13 +19,6 @@ use SilverStripe\ORM\HasManyList;
  */
 class TrafficSplitSiteTreeExtension extends Extension
 {
-    /**
-     * @var string
-     * @config
-     */
-    private static string $traffic_split_marker = 'laboratory-traffic-split';
-    private static string $traffic_split_cookie_mame = 'laboratory-traffic-split';
-
     private static array $has_many = [
         'LaboratoryTrafficSplits' => TrafficSplit::class . '.EntryPage',
         'LaboratoryContentVariations' => ContentVariation::class . '.VariationPage',
@@ -53,8 +47,9 @@ class TrafficSplitSiteTreeExtension extends Extension
             return '';
         }
 
+        $service = TrafficSplitService::singleton();
         $variationData = [];
-        $marker = (string) $owner->config()->get('traffic_split_marker');
+        $marker = (string) $service->config()->get('traffic_split_marker');
         $contentVariations = $trafficSplit->ContentVariations();
 
         foreach ($contentVariations as $contentVariation) {
@@ -71,7 +66,7 @@ class TrafficSplitSiteTreeExtension extends Extension
             ];
         }
 
-        $cookieName = (string) $owner->config()->get('traffic_split_cookie_mame');
+        $cookieName = (string) $service->config()->get('traffic_split_cookie_mame');
         $cookieData = sprintf('%s-%d', $cookieName, $trafficSplit->ID);
 
         $data = [
