@@ -52,10 +52,12 @@ class TrafficSplitSiteTreeExtension extends Extension
         $contentVariations = $trafficSplit->ContentVariations();
 
         foreach ($contentVariations as $contentVariation) {
+            // If we have a content variation identifier let's use it, otherwise fall back to content variation ID
+            $markerValue = $contentVariation->VariationIdentifier ?: $contentVariation->ID;
             $pageUrl = $contentVariation
                 ->VariationPage()
                 ->AbsoluteLink();
-            $markerSegment = sprintf('?%s=%s', $marker, $contentVariation->ID);
+            $markerSegment = sprintf('?%s=%s', $marker, $markerValue);
             $variationUrl = Controller::join_links($pageUrl, $markerSegment);
 
             $variationData[] = [

@@ -9,6 +9,10 @@ DNADesign\Elemental\Models\BaseElement:
   extensions:
     - SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension
 
+DNADesign\Elemental\Models\ElementalArea:
+  extensions:
+    - SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension
+
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\Director:
     properties:
@@ -16,7 +20,3 @@ SilverStripe\Core\Injector\Injector:
         LaboratoryTrafficSplitMiddleware: '%$LaboratoryTrafficSplitMiddleware'
   LaboratoryTrafficSplitMiddleware:
     class: 'SilverStripe\Laboratory\Middleware\TrafficSplitMiddleware'
-
-SilverStripe\Laboratory\Service\TrafficSplitService:
-  # TODO remove this as it should be disabled by default
-  element_variation_enabled: true

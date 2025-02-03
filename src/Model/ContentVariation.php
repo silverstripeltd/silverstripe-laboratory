@@ -4,11 +4,13 @@ namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\CompositeValidator;
+use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Laboratory\Service\TrafficSplitService;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 
@@ -17,6 +19,7 @@ use SilverStripe\Versioned\Versioned;
  *
  * @property string $Title
  * @property int $Probability
+ * @property string $VariationIdentifier
  * @property int $ParentID
  * @property int $VariationPageID
  * @method TrafficSplit Parent()
@@ -42,6 +45,7 @@ class ContentVariation extends DataObject
     private static array $db = [
         'Title' => 'Varchar',
         'Probability' => 'Int',
+        'VariationIdentifier' => 'Varchar',
     ];
 
     private static array $has_one = [
@@ -62,6 +66,7 @@ class ContentVariation extends DataObject
         'Title' => 'Title',
         'Probability' => 'Probability',
         'VariationPage.Title' => 'Variation page title',
+        'VariationIdentifier' => 'Variation identifier',
     ];
 
     public function getCMSFields(): FieldList
@@ -70,19 +75,38 @@ class ContentVariation extends DataObject
             $fields->removeByName([
                 'Title',
                 'Probability',
+                'VariationIdentifier',
                 'VariationPageID',
                 'ParentID',
             ]);
+
+            $service = TrafficSplitService::singleton();
+            $variationPage = $this->VariationPage();
+            $variationIdentifiersValues = [];
+
+            // Attempt to find content variation identifiers for the variation page
+            if ($variationPage->exists()) {
+                $variationIdentifiers = $service->getSecondaryVariationIdentifiers($variationPage);
+
+                if (count($variationIdentifiers) > 0) {
+                    $variationIdentifiersValues = array_combine($variationIdentifiers, $variationIdentifiers);
+                }
+            }
 
             $fields->addFieldsToTab('Root.Main', [
                 $titleField = TextField::create('Title', 'CMS Title'),
                 $probabilityField = NumericField::create('Probability', 'Probability'),
                 $variationPageField = TreeDropdownField::create('VariationPageID', 'Variation page', SiteTree::class),
+                $variationIdentifierField = DropdownField::create(
+                    'VariationIdentifier',
+                    'Variation identifier',
+                    $variationIdentifiersValues
+                ),
             ]);
 
             $titleField->setDescription(
                 'The CMS title will not be visible on your page, it is used to name your component '
-                . 'so that it can be found easily from within the CMS'
+                . 'so that it can be found easily from within the CMS.'
             );
 
             $trafficSplit = $this->Parent();
@@ -105,12 +129,28 @@ class ContentVariation extends DataObject
                 ->setAttribute('min', self::MINIMUM_TRAFFIC_RATIO)
                 ->setAttribute('max', self::MAXIMUM_TRAFFIC_RATIO)
                 ->setAttribute('placeholder', self::DEFAULT_TRAFFIC_RATIO)
-                ->setDescription($message)
-            ;
+                ->setDescription($message);
 
             $variationPageField->setDescription(
-                'The page where the experiment is expected to redirect website visitors to for this content variation'
+                'The page where the experiment is expected to redirect website visitors to for this content variation.'
             );
+
+            $variationDescription = count($variationIdentifiersValues) > 0
+                ? 'Choose a specific content variation of the variation page.'
+                : 'Your variation page has no variation identifiers set up.';
+            $variationIdentifierField
+                ->setEmptyString('-- select --')
+                ->setDescription($variationDescription);
+
+            if ($service->getElementVariationEnabled()) {
+                return;
+            }
+
+            // Content variation within page feature is not enabled,
+            // change the field to read only as we don't need to interact with it
+            $variationIdentifierField->setRightTitle('Feature disabled');
+            $readOnlyVariationField = $variationIdentifierField->performReadonlyTransformation();
+            $fields->replaceField($variationIdentifierField->getName(), $readOnlyVariationField);
         });
 
         return parent::getCMSFields();
