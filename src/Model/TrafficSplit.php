@@ -180,28 +180,27 @@ class TrafficSplit extends DataObject
     /**
      * Format the datetime of the end of the traffic split active period
      *
-     * @return string
+     * @return DBDatetime|null
      */
-    public function getActivationEndDate(): string
+    public function getActivationEndDate(): ?DBDatetime
     {
-        return Versioned::withVersionedMode(function (): string {
+        return Versioned::withVersionedMode(function (): ?DBDatetime {
             Versioned::set_stage(Versioned::LIVE);
 
             /** @var TrafficSplit $trafficSplit */
             $trafficSplit = TrafficSplit::get()->byID($this->ID);
 
-            $publishedAt = $trafficSplit
-                ? $trafficSplit->LastEdited
-                : DBDatetime::now()->Rfc2822();
+            if (!$trafficSplit) {
+                return null;
+            }
+
+            $publishedAt = $trafficSplit->LastEdited;
 
             /** @var DBDatetime $publishDate */
             $publishDate = DBDatetime::create_field('Datetime', $publishedAt);
             $publishDate->modify(sprintf('+%d day', $this->VariationChoiceExpiry));
 
-            $formatter = $publishDate->getFormatter();
-            $formatter->setPattern(DBDatetime::ISO_DATETIME_NORMALISED);
-
-            return $formatter->format($publishDate->getTimestamp());
+            return $publishDate;
         });
     }
 
@@ -222,9 +221,10 @@ class TrafficSplit extends DataObject
 
         if ($isTrafficSplitPublished && $entryPage->exists()) {
             return sprintf(
-                '<p class="message good">Traffic split is active at <a href="%s" target="_blank">%s</a> page</p>',
+                '<p class="message good">Traffic split is active at <a href="%s" target="_blank">%s</a> page and the activation ends on %s</p>',
                 $entryPage->AbsoluteLink(),
-                $entryPage->Title
+                $entryPage->Title,
+                $this->getActivationEndDate()->Nice()
             );
         }
 

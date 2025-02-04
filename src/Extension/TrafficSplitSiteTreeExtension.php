@@ -8,6 +8,7 @@ use SilverStripe\Core\Extension;
 use SilverStripe\Laboratory\Model\ContentVariation;
 use SilverStripe\Laboratory\Model\TrafficSplit;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
 
 /**
@@ -53,7 +54,7 @@ class TrafficSplitSiteTreeExtension extends Extension
 
         foreach ($contentVariations as $contentVariation) {
             // If we have a content variation identifier let's use it, otherwise fall back to content variation ID
-            $markerValue = $contentVariation->VariationIdentifier ?: $contentVariation->ID;
+            $markerValue = $contentVariation->VariationIdentifier ?: sprintf('cv-%d', $contentVariation->ID);
             $pageUrl = $contentVariation
                 ->VariationPage()
                 ->AbsoluteLink();
@@ -63,7 +64,7 @@ class TrafficSplitSiteTreeExtension extends Extension
             $variationData[] = [
                 'probability' => $contentVariation->Probability,
                 'url' => $variationUrl,
-                'id' => $contentVariation->ID,
+                'id' => $markerValue,
             ];
         }
 
@@ -71,11 +72,13 @@ class TrafficSplitSiteTreeExtension extends Extension
         // will cause a new cookie name to be issues
         $cookieName = $service->getTrafficSplitCookieName();
         $cookieData = sprintf('%s-%d-%d', $cookieName, $trafficSplit->ID, $trafficSplit->Version);
+        $activationEndDate = $trafficSplit->getActivationEndDate();
+        $cookieExpiry = $this->formatCookieExpiry($activationEndDate);
 
         $data = [
             'marker' => $marker,
             'cookie' => $cookieData,
-            'expiry' => $trafficSplit->getActivationEndDate(),
+            'expiry' => $cookieExpiry,
             'variations' => $variationData,
         ];
 
@@ -115,6 +118,20 @@ class TrafficSplitSiteTreeExtension extends Extension
         return $request->getVar('CMSPreview') === '1';
     }
 
+    /**
+     * Format the datetime of the end of the traffic split active period
+     *
+     * @param DBDatetime $expiry
+     * @return string
+     */
+    private function formatCookieExpiry(DBDatetime $expiry): string
+    {
+        $formatter = $expiry->getFormatter();
+        $formatter->setPattern(DBDatetime::ISO_DATETIME_NORMALISED);
+
+        return $formatter->format($expiry->getTimestamp());
+    }
+
     private function getCodeTemplate(): string
     {
         return <<<'HTML'
@@ -147,7 +164,7 @@ class TrafficSplitSiteTreeExtension extends Extension
         const cookies = document.cookie.replace('; ', ';').split(';');
 
         // Search for a specific cookie
-        let preselectedVariation = 0;
+        let preselectedVariation = '';
 
         for (var i = 0; i < cookies.length; i++) {
             const segment = cookies[i];
@@ -165,7 +182,7 @@ class TrafficSplitSiteTreeExtension extends Extension
             }
 
             // We found our marker
-            preselectedVariation = parseInt(itemValue);
+            preselectedVariation = itemValue;
 
             break;
         }
@@ -212,7 +229,8 @@ class TrafficSplitSiteTreeExtension extends Extension
                 // Set cookie to remember this choice
                 const rawExpiryDate = new Date(trafficSplitPayload.expiry);
                 const cookieExpiryDate = rawExpiryDate.toUTCString();
-                document.cookie = `${cookieName}=${variation.id}; expires=${cookieExpiryDate}; Secure`;
+                const cookieData = `${cookieName}=${variation.id}; expires=${cookieExpiryDate}`;
+                document.cookie = cookieData;
 
                 break;
             }
