@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Laboratory\Service;
 
-use App\Pages\BlockPage;
 use DNADesign\Elemental\Controllers\ElementController;
 use DNADesign\Elemental\Extensions\ElementalAreasExtension;
 use DNADesign\Elemental\Models\BaseElement;
@@ -104,11 +103,11 @@ class TrafficSplitService implements Resettable
 
     /**
      * @param SS_List $controllers
-     * @param BlockPage $page
+     * @param SiteTree $page
      * @return SS_List
      * @throws Exception
      */
-    public function getElementControllersWithTrafficSplit(SS_List $controllers, BlockPage $page): SS_List
+    public function getElementControllersWithTrafficSplit(SS_List $controllers, SiteTree $page): SS_List
     {
         // Default behaviour: If there's no content variation query param included,
         // we only need to show the ones that have no content variation identifier or are the primary variant

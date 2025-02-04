@@ -40,7 +40,7 @@ class TrafficSplitElementalAreaExtension extends Extension
         }
 
         // Page doesn't have elemental area for some reason, fall back to the parent method
-        if (!$page->hasExtension(ElementalAreasExtension::class)) {
+        if (!$page || !$page->hasExtension(ElementalAreasExtension::class)) {
             return $area->ElementControllers();
         }
 
