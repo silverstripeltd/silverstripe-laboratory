@@ -56,9 +56,9 @@ This module aims to provide the necessary content setup to run content experimen
 This setup is intended for sites that do not use Elemental module.
 The most common setup is as follows:
 
-* entry page - www.mysite.com/entry-page-url
-* primary content variation page - www.mysite.com/primary-variation-url
-* secondary content variation page - www.mysite.com/secondary-variation-url
+* entry page - `www.mysite.com/entry-page-url`
+* primary content variation page - `www.mysite.com/primary-variation-url`
+* secondary content variation page - `www.mysite.com/secondary-variation-url`
 
 It's common that entry page is the same page as primary content variation page.
 Website visitor will arrive at the entry page URL and will end up in one of the content variation pages.
@@ -69,9 +69,9 @@ The page URL changes which may be confusing for the website visitor, and also it
 This setup is intended for sites that do use Elemental module.
 The most common setup is as follows:
 
-* entry page - www.mysite.com/my-page
-* primary content variation page - www.mysite.com/my-page?laboratory-traffic-split=primary
-* secondary content variation page - www.mysite.com/my-page?laboratory-traffic-split=secondary
+* entry page - `www.mysite.com/my-page`
+* primary content variation page - `www.mysite.com/my-page?laboratory-traffic-split=primary`
+* secondary content variation page - `www.mysite.com/my-page?laboratory-traffic-split=secondary`
 
 In this situation the website visitor stays on the same page URL, the only difference are GET params.
 This provides a better solution compared to the default setup.
