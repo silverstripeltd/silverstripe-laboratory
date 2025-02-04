@@ -38,6 +38,11 @@ class VariationIdentifierElementExtension extends Extension
             $primaryVariationName
         );
 
+        // Remove scaffolded field
+        $fields->removeByName([
+            'LaboratoryVariationIdentifier',
+        ]);
+
         $fields->addFieldsToTab(
             'Root.Settings',
             [
