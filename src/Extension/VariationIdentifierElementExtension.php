@@ -24,6 +24,11 @@ class VariationIdentifierElementExtension extends Extension
 
     public function updateCMSFields(FieldList $fields): void
     {
+        // Remove scaffolded field
+        $fields->removeByName([
+            'LaboratoryVariationIdentifier',
+        ]);
+
         $service = TrafficSplitService::singleton();
 
         // Elemental content variation is disabled
@@ -37,11 +42,6 @@ class VariationIdentifierElementExtension extends Extension
             . 'please ensure to use "%s" as the variation identifier.',
             $primaryVariationName
         );
-
-        // Remove scaffolded field
-        $fields->removeByName([
-            'LaboratoryVariationIdentifier',
-        ]);
 
         $fields->addFieldsToTab(
             'Root.Settings',
