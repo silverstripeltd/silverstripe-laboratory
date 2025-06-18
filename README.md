@@ -40,6 +40,60 @@ The file needs to be called `ElementalArea.ss` and it needs to be placed under t
 
 `/themes/<your-theme-folder>/templates/DNADesign/Elemental/Models/ElementalArea.ss`
 
+#### Custom models
+
+In case you're not using Elemental module to manage content blocks to manage all your content there is an option to integrate this module with any `DataObject`.
+Follow the steps below to achieve this:
+
+* apply `VariationIdentifierModelExtension` to your `DataObject`
+
+Code examples below:
+
+```php
+class MyModel extends DataObject
+{
+    private static array $extensions = [
+        VariationIdentifierModelExtension::class,
+    ];
+}
+```
+
+```yaml
+MyModel:
+  extensions:
+    - SilverStripe\Laboratory\Extension\VariationIdentifierModelExtension
+```
+
+* expose your model on your page
+
+```php
+class MyPage extends Page
+{
+    /**
+     * Extension point in @see TrafficSplitService::findValidIdentifiers()
+     *
+     * @param array $lists
+     * @return void
+     */
+    public function collectLaboratoryContentLists(array &$lists): void
+    {
+        // This can be either a page relation or just a DataList or any other SS_List
+        $lists[] = $this->ContentModels();
+    }
+}
+```
+
+* apply content variation filtering
+
+```php
+// This code needs to go to where you are fetching data to be rendered on the frontend
+
+// This should be the same list as you expose in the collectLaboratoryContentLists()
+$list = $page->ContentModels();
+// Apply content variation filter
+$list = TrafficSplitService::singleton()->getListWithTrafficSplit($list, $page)
+```
+
 ## Documentation
 
 This module provides capability to support experimentation.
