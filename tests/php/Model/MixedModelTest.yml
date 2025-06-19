@@ -1,0 +1,57 @@
+DNADesign\Elemental\Models\ElementalArea:
+  area1:
+    OwnerClassName: Page
+
+SilverStripe\Laboratory\Tests\Model\PageWithGenericModels:
+  page1:
+    Title: 'Page 1'
+    URLSegment: 'page1'
+    ElementalArea: =>DNADesign\Elemental\Models\ElementalArea.area1
+
+DNADesign\Elemental\Models\ElementContent:
+  standard-block1:
+    Title: 'Standard block 1'
+    Sort: 1
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.area1
+  primary-block:
+    Title: 'Primary block'
+    LaboratoryVariationIdentifier: "primary\nblue"# Needs double quotes to include the newline
+    Sort: 2
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.area1
+  standard-block2:
+    Title: 'Standard block 2'
+    Sort: 3
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.area1
+  secondary-block:
+    Title: 'Secondary block'
+    LaboratoryVariationIdentifier: 'red'
+    Sort: 4
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.area1
+  standard-block3:
+    Title: 'Standard block 3'
+    Sort: 5
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.area1
+
+SilverStripe\Laboratory\Tests\Model\GenericContentModel:
+  standard-model1:
+    Title: 'Standard model 1'
+    Sort: 1
+    Parent: =>SilverStripe\Laboratory\Tests\Model\PageWithGenericModels.page1
+  primary-model:
+    Title: 'Primary model'
+    LaboratoryVariationIdentifier: "primary\norange"# Needs double quotes to include the newline
+    Sort: 2
+    Parent: =>SilverStripe\Laboratory\Tests\Model\PageWithGenericModels.page1
+  standard-model2:
+    Title: 'Standard model 2'
+    Sort: 3
+    Parent: =>SilverStripe\Laboratory\Tests\Model\PageWithGenericModels.page1
+  secondary-model:
+    Title: 'Secondary model'
+    LaboratoryVariationIdentifier: 'green'
+    Sort: 4
+    Parent: =>SilverStripe\Laboratory\Tests\Model\PageWithGenericModels.page1
+  standard-model3:
+    Title: 'Standard model 3'
+    Sort: 5
+    Parent: =>SilverStripe\Laboratory\Tests\Model\PageWithGenericModels.page1

@@ -11,6 +11,8 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Resettable;
 use SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension;
+use SilverStripe\Laboratory\Extension\VariationIdentifierModelExtension;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\ORM\SS_List;
 
@@ -130,6 +132,34 @@ class TrafficSplitService implements Resettable
     }
 
     /**
+     * @param SS_List $list
+     * @param SiteTree $page
+     * @return SS_List
+     * @throws Exception
+     */
+    public function getListWithTrafficSplit(SS_List $list, SiteTree $page): SS_List
+    {
+        // Default behaviour: If there's no content variation query param included,
+        // we only need to show the ones that have no content variation identifier or are the primary variant
+        $identifier = $this->getContentVariationIdentifier();
+        $defaultIdentifier = TrafficSplitService::singleton()->getElementPrimaryVariationName();
+
+        // We don't have an identifier set so we will fall back on the default
+        if (!$identifier) {
+            return $this->filterList($list, $defaultIdentifier);
+        }
+
+        // Get all valid variant identifiers, so we can validate the identifier passed via global state
+        $identifiers = $this->getValidIdentifiers($page);
+
+        return in_array($identifier, $identifiers)
+            // Identifier is valid - use the identifier
+            ? $this->filterList($list, $identifier)
+            // Identifier is invalid - fall back to default
+            : $this->filterList($list, $defaultIdentifier);
+    }
+
+    /**
      * Apply sanitization and data consistency to identifier data
      *
      * @param string|null $identifier
@@ -166,9 +196,11 @@ class TrafficSplitService implements Resettable
         $identifiers = $this->getValidIdentifiers($page);
         $primaryIdentifier = $this->getElementPrimaryVariationName();
 
-        return array_diff($identifiers, [
+        $secondaryIdentifiers = array_diff($identifiers, [
             $primaryIdentifier,
         ]);
+
+        return array_values($secondaryIdentifiers);
     }
 
     /**
@@ -201,6 +233,46 @@ class TrafficSplitService implements Resettable
     }
 
     /**
+     * Filter down models to only those which are relevant for our content variation
+     *
+     * @param SS_List $controllers
+     * @param string $identifier
+     * @return SS_List
+     */
+    private function filterList(SS_List $list, string $identifier): SS_List
+    {
+        $dataClass = $list->dataClass();
+
+        // We are not able to validate what kind of model are wwe supposed to filter
+        if (!$dataClass) {
+            return $list;
+        }
+
+        $model = DataObject::singleton($dataClass);
+
+        // Model doesn't have the variation identifier metadata, so we can't filter it
+        if (!$model->hasExtension(VariationIdentifierModelExtension::class)) {
+            return $list;
+        }
+
+        // TODO this filtering will not work correctly if identifiers aren't unique in a sense
+        // that some identifiers contain other identifiers
+        // This can be changed to model level filtering but that's potentially less performant
+        // Alternatively, we could add value separators
+        return $list->filterAny([
+            // Content variation is not active on this model, so we will add it to the result
+            'LaboratoryVariationIdentifier' => [
+                null,
+                '',
+            ],
+            // Return only models that contain matching identifiers
+            'LaboratoryVariationIdentifier:PartialMatch' => [
+                $identifier,
+            ],
+        ]);
+    }
+
+    /**
      * @param SiteTree $page
      * @return array
      * @throws Exception
@@ -216,12 +288,48 @@ class TrafficSplitService implements Resettable
         return $this->validIdentifiers[$cacheKey];
     }
 
+    private function findValidIdentifiers(SiteTree $page): array
+    {
+        // Initially add any identifiers from regular content blocks (if present)
+        $identifiers = $this->findValidIdentifiersFromBlockPage($page);
+
+        // Include any identifiers from generic models
+        $lists = [];
+        $page->invokeWithExtensions('collectLaboratoryContentLists', $lists);
+
+        foreach ($lists as $list) {
+            // Not a valid list, so we won't process it
+            if (!$list instanceof SS_List) {
+                continue;
+            }
+
+            $listIdentifiers = $this->findValidIdentifiersFromList($list);
+
+            // No identifiers were found, so we can move on
+            if (count($listIdentifiers) === 0) {
+                continue;
+            }
+
+            // Add found identifier to our global list, so we can collect them all
+            $identifiers = array_merge($identifiers, $listIdentifiers);
+        }
+
+        return $this->formatIdentifiers($identifiers);
+    }
+
     /**
      * @param SiteTree|ElementalAreasExtension $page
      * @return array
      */
-    private function findValidIdentifiers(SiteTree $page): array
+    private function findValidIdentifiersFromBlockPage(SiteTree $page): array
     {
+        $enabled = $this->getElementVariationEnabled();
+
+        // Feature is not enabled so we don't have to collect the identifiers
+        if (!$enabled) {
+            return [];
+        }
+
         // Page doesn't have any content blocks on it
         if (!$page->hasExtension(ElementalAreasExtension::class)) {
             return [];
@@ -253,6 +361,50 @@ class TrafficSplitService implements Resettable
 
             // Parse out segments so we can add them to the list
             $identifierSegments = $this->unSerialiseIdentifierData($block->LaboratoryVariationIdentifier);
+            $identifiers = array_merge($identifiers, $identifierSegments);
+        }
+
+        // Make sure we only have unique list of identifiers
+        return $this->formatIdentifiers($identifiers);
+    }
+
+    private function findValidIdentifiersFromList(SS_List $list): array
+    {
+        $dataClass = $list->dataClass();
+
+        // We are not able to validate what kind of model are wwe supposed to filter
+        if (!$dataClass) {
+            return [];
+        }
+
+        $model = DataObject::singleton($dataClass);
+
+        // Model doesn't have the variation identifier metadata, so we can't extract identifiers
+        if (!$model->hasExtension(VariationIdentifierModelExtension::class)) {
+            return [];
+        }
+
+        // We only want variant models in this case, so excluding any non-variation models
+        $list = $list->filter([
+            'LaboratoryVariationIdentifier:Not' => [
+                null,
+                '',
+            ],
+        ]);
+
+        $identifiers = [];
+
+        /** @var DataObject|VariationIdentifierElementExtension $item */
+        foreach ($list as $item) {
+            $identifierData = $item->LaboratoryVariationIdentifier;
+
+            // We don't have any identifier data
+            if (!$identifierData) {
+                continue;
+            }
+
+            // Parse out segments so we can add them to the list
+            $identifierSegments = $this->unSerialiseIdentifierData($item->LaboratoryVariationIdentifier);
             $identifiers = array_merge($identifiers, $identifierSegments);
         }
 
