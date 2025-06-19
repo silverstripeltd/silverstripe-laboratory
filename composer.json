@@ -11,7 +11,6 @@
     ],
     "require": {
         "php": "^8.3",
-        "dnadesign/silverstripe-elemental": "^5",
         "silverstripe/framework": "^5.3",
         "silverstripe/cms": "^5",
         "silverstripe/versioned": "^2",

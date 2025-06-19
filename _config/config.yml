@@ -5,14 +5,6 @@ SilverStripe\CMS\Model\SiteTree:
   extensions:
     - SilverStripe\Laboratory\Extension\TrafficSplitSiteTreeExtension
 
-DNADesign\Elemental\Models\BaseElement:
-  extensions:
-    - SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension
-
-DNADesign\Elemental\Models\ElementalArea:
-  extensions:
-    - SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension
-
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\Director:
     properties:
@@ -20,3 +12,17 @@ SilverStripe\Core\Injector\Injector:
         LaboratoryTrafficSplitMiddleware: '%$LaboratoryTrafficSplitMiddleware'
   LaboratoryTrafficSplitMiddleware:
     class: 'SilverStripe\Laboratory\Middleware\TrafficSplitMiddleware'
+
+---
+Name: silverstripe-laboratory-elemental
+Only:
+  moduleexists: 'dnadesign/silverstripe-elemental'
+---
+
+DNADesign\Elemental\Models\BaseElement:
+  extensions:
+    - SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension
+
+DNADesign\Elemental\Models\ElementalArea:
+  extensions:
+    - SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension
