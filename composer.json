@@ -19,6 +19,7 @@
     "require-dev": {
         "silverstripe/frameworktest": "^1",
         "dnadesign/silverstripe-elemental": "^5",
+        "silverstripe/documentation-lint": "^1",
         "phpunit/phpunit": "^9.5",
         "silverstripe/behat-extension": "^5.4",
         "silverstripeltd/bespoke-standards": "^1.2"

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="SS5">
+    <description>Coding standard for Silverstripe Bespoke projects</description>
+
+    <rule ref="./vendor/silverstripeltd/bespoke-standards/ruleset.xml">
+
+        <!-- prevent phpcbf 'fixing' the $fixture_file type hint which generates an error because of the parent class -->
+        <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint"/>
+
+        <!-- Rule with an issue related to Slevomat module -->
+        <exclude name="SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse"/>
+
+        <rule ref="Generic.Formatting.SpaceAfterCast">
+            <properties>
+                <property name="spacing" value="1"/>
+            </properties>
+        </rule>
+    </rule>
+</ruleset>
