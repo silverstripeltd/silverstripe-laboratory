@@ -117,8 +117,9 @@ class TrafficSplit extends DataObject
                 ->setAttribute('min', self::MINIMUM_VARIATION_CHOICE_EXPIRY)
                 ->setAttribute('placeholder', self::DEFAULT_VARIATION_CHOICE_EXPIRY)
                 ->setDescription(
-                    'Defines the duration of the traffic split content variation choice for website visitor. '
-                    . 'This setting should roughly match the duration of the experimentation period for a particular test.'
+                    'Defines the duration of the traffic split content variation choice '
+                    . 'for website visitor. This setting should roughly match the duration '
+                    . 'of the experimentation period for a particular test.'
                 )
             ;
 
@@ -219,7 +220,8 @@ class TrafficSplit extends DataObject
 
         if ($isTrafficSplitPublished && $entryPage->exists()) {
             return sprintf(
-                '<p class="message good">Traffic split is active at <a href="%s" target="_blank">%s</a> page and the activation ends on %s</p>',
+                '<p class="message good">Traffic split is active at '
+                . '<a href="%s" target="_blank">%s</a> page and the activation ends on %s</p>',
                 $entryPage->AbsoluteLink(),
                 $entryPage->Title,
                 $this->getActivationEndDate()->Nice()

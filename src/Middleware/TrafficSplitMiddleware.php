@@ -7,7 +7,8 @@ use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
 
 /**
- * Extracts content variation related GET param and sets the global state of related service which is used for later processing
+ * Extracts content variation related GET param and sets the global state of related service
+ * which is used for later processing
  * This allows us to change the page render to only show blocks relevant to specific content variation
  */
 class TrafficSplitMiddleware implements HTTPMiddleware

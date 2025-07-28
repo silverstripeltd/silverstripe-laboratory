@@ -48,7 +48,10 @@ class VariationIdentifierElementExtension extends Extension
             [
                 CompositeField::create([
                     HeaderField::create('LaboratoryVariationHeading', 'Laboratory settings'),
-                    $variationIdentifierField = TextareaField::create('LaboratoryVariationIdentifier', 'Variation identifier'),
+                    $variationIdentifierField = TextareaField::create(
+                        'LaboratoryVariationIdentifier',
+                        'Variation identifier'
+                    ),
                 ]),
             ],
         );
