@@ -61,7 +61,7 @@ class TrafficSplitService implements Resettable
 
     public static function reset(): void
     {
-        self::singleton()->clearData();
+        TrafficSplitService::singleton()->clearData();
     }
 
     public function getTrafficSplitMarker(): string
@@ -89,14 +89,14 @@ class TrafficSplitService implements Resettable
         return $this->contentVariationIdentifier;
     }
 
-    public function setContentVariationIdentifier(string $contentVariationIdentifier): self
+    public function setContentVariationIdentifier(string $contentVariationIdentifier): TrafficSplitService
     {
         $this->contentVariationIdentifier = $contentVariationIdentifier;
 
         return $this;
     }
 
-    public function clearData(): self
+    public function clearData(): TrafficSplitService
     {
         $this->contentVariationIdentifier = '';
         $this->validIdentifiers = [];
