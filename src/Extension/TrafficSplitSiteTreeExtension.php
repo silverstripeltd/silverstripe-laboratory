@@ -16,7 +16,7 @@ use SilverStripe\ORM\HasManyList;
  *
  * @method HasManyList|TrafficSplit[] LaboratoryTrafficSplits()
  * @method HasManyList|ContentVariation[] LaboratoryContentVariations()
- *  @method SiteTree|$this getOwner()
+ * @method SiteTree|$this getOwner()
  */
 class TrafficSplitSiteTreeExtension extends Extension
 {

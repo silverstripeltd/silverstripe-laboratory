@@ -75,7 +75,7 @@ class TrafficSplit extends DataObject
 
     private static array $defaults = [
         'Title' => 'Traffic split',
-        'VariationChoiceExpiry' => self::DEFAULT_VARIATION_CHOICE_EXPIRY,
+        'VariationChoiceExpiry' => TrafficSplit::DEFAULT_VARIATION_CHOICE_EXPIRY,
     ];
 
     private static array $summary_fields = [
@@ -114,8 +114,8 @@ class TrafficSplit extends DataObject
 
             $variationChoiceField
                 ->setHTML5(true)
-                ->setAttribute('min', self::MINIMUM_VARIATION_CHOICE_EXPIRY)
-                ->setAttribute('placeholder', self::DEFAULT_VARIATION_CHOICE_EXPIRY)
+                ->setAttribute('min', TrafficSplit::MINIMUM_VARIATION_CHOICE_EXPIRY)
+                ->setAttribute('placeholder', TrafficSplit::DEFAULT_VARIATION_CHOICE_EXPIRY)
                 ->setDescription(
                     'Defines the duration of the traffic split content variation choice '
                     . 'for website visitor. This setting should roughly match the duration '
@@ -240,7 +240,7 @@ class TrafficSplit extends DataObject
 
         $contentVariations = $this->ContentVariations();
 
-        if ($contentVariations->count() < self::MINIMUM_CONTENT_VARIATIONS) {
+        if ($contentVariations->count() < TrafficSplit::MINIMUM_CONTENT_VARIATIONS) {
             return '<p class="message warning">Traffic split needs to have at least two content variations</p>';
         }
 
@@ -250,7 +250,7 @@ class TrafficSplit extends DataObject
             return sprintf(
                 '<p class="message warning">Traffic split needs to have a balanced probability distribution '
                 . '(sum of probabilities across all content variations has to be %d, current value is %d)</p>',
-                self::TOTAL_PROBABILITY,
+                TrafficSplit::TOTAL_PROBABILITY,
                 $totalProbability,
             );
         }
@@ -280,7 +280,7 @@ class TrafficSplit extends DataObject
             return false;
         }
 
-        $trafficSplits = self::get()
+        $trafficSplits = TrafficSplit::get()
             ->filter([
                 // Looking for specific entry page to validate
                 'EntryPageID' => $entryPage->ID,
@@ -316,7 +316,7 @@ class TrafficSplit extends DataObject
         }
 
         // Not enough content variations (need at least two for a traffic split)
-        if ($contentVariations->count() < self::MINIMUM_CONTENT_VARIATIONS) {
+        if ($contentVariations->count() < TrafficSplit::MINIMUM_CONTENT_VARIATIONS) {
             return false;
         }
 
@@ -347,7 +347,7 @@ class TrafficSplit extends DataObject
     {
         $totalProbability = $this->getTotalProbability();
 
-        return $totalProbability === self::TOTAL_PROBABILITY;
+        return $totalProbability === TrafficSplit::TOTAL_PROBABILITY;
     }
 
     private function getTotalProbability(): int
