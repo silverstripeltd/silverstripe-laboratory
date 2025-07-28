@@ -3,13 +3,13 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Forms\CompositeValidator;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\NumericField;
-use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Forms\Validation\CompositeValidator;
+use SilverStripe\Forms\Validation\RequiredFieldsValidator;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
@@ -161,7 +161,7 @@ class ContentVariation extends DataObject
         $this->beforeExtending(
             'updateCMSCompositeValidator',
             function (CompositeValidator $compositeValidator): void {
-                $validator = RequiredFields::create([
+                $validator = RequiredFieldsValidator::create([
                     'Title',
                     'Probability',
                     'VariationPageID',

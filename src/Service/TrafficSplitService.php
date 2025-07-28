@@ -12,9 +12,10 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Resettable;
 use SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension;
 use SilverStripe\Laboratory\Extension\VariationIdentifierModelExtension;
+use SilverStripe\Laboratory\Tests\Model\GenericContentModel;
+use SilverStripe\Model\List\SS_List;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
-use SilverStripe\ORM\SS_List;
 
 /**
  * Traffic split content variation handling
@@ -235,7 +236,7 @@ class TrafficSplitService implements Resettable
     /**
      * Filter down models to only those which are relevant for our content variation
      *
-     * @param SS_List $controllers
+     * @param SS_List $list
      * @param string $identifier
      * @return SS_List
      */

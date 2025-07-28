@@ -13,7 +13,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 
 class ElementModelTest extends SapphireTest
 {
@@ -49,7 +49,7 @@ class ElementModelTest extends SapphireTest
         $this->assertSame($expected, $identifiers, 'We expect a specific set of secondary identifiers');
     }
 
-    public function secondaryIdentifiersElementsCasesProvider(): array
+    public static function secondaryIdentifiersElementsCasesProvider(): array
     {
         return [
             'enabled' => [
@@ -107,7 +107,7 @@ class ElementModelTest extends SapphireTest
         $this->assertSame($expectedBlocks, $list->column('Title'), 'We expect a specific list of blocks');
     }
 
-    public function trafficSplitElementCasesProvider(): array
+    public static function trafficSplitElementCasesProvider(): array
     {
         return [
             'no variation identifier (enabled)' => [

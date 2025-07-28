@@ -3,16 +3,16 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Forms\CompositeValidator;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\NumericField;
-use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Forms\Validation\CompositeValidator;
+use SilverStripe\Forms\Validation\RequiredFieldsValidator;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
@@ -152,7 +152,7 @@ class TrafficSplit extends DataObject
         $this->beforeExtending(
             'updateCMSCompositeValidator',
             function (CompositeValidator $compositeValidator): void {
-                $validator = RequiredFields::create([
+                $validator = RequiredFieldsValidator::create([
                     'Title',
                     'VariationChoiceExpiry',
                     'EntryPageID',
@@ -195,8 +195,6 @@ class TrafficSplit extends DataObject
             }
 
             $publishedAt = $trafficSplit->LastEdited;
-
-            /** @var DBDatetime $publishDate */
             $publishDate = DBDatetime::create_field('Datetime', $publishedAt);
             $publishDate->modify(sprintf('+%d day', $this->VariationChoiceExpiry));
 

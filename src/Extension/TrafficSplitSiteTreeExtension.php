@@ -105,11 +105,13 @@ class TrafficSplitSiteTreeExtension extends Extension
 
     private function isCmsPreview(): bool
     {
-        if (Controller::has_curr()) {
+        $controller = Controller::curr();
+
+        if (!$controller) {
             return false;
         }
 
-        $request = Controller::curr()?->getRequest();
+        $request = $controller->getRequest();
 
         if (!$request) {
             return false;
