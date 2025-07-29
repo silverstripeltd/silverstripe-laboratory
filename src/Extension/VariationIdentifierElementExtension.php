@@ -14,7 +14,8 @@ use SilverStripe\Laboratory\Service\TrafficSplitService;
  * Add the capability to mark blocks with content variation identifiers
  *
  * @property string $LaboratoryVariationIdentifier
- * @method BaseElement|$this getOwner()
+ * @extends Extension<BaseElement>
+ * @extends Extension<VariationIdentifierElementExtension>
  */
 class VariationIdentifierElementExtension extends Extension
 {

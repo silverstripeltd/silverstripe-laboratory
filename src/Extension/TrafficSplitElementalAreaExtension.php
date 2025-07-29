@@ -6,6 +6,7 @@ use DNADesign\Elemental\Extensions\ElementalAreasExtension;
 use DNADesign\Elemental\Models\ElementalArea;
 use Exception;
 use Psr\Container\NotFoundExceptionInterface;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Extension;
 use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
@@ -14,7 +15,8 @@ use SilverStripe\Model\List\SS_List;
 /**
  * Provide the capability to render content variations
  *
- * @method ElementalArea|$this getOwner()
+ * @extends Extension<ElementalArea>
+ * @extends Extension<TrafficSplitElementalAreaExtension>
  */
 class TrafficSplitElementalAreaExtension extends Extension
 {
@@ -30,6 +32,8 @@ class TrafficSplitElementalAreaExtension extends Extension
     public function ElementControllersWithTrafficSplit(): SS_List
     {
         $area = $this->getOwner();
+
+        /** @var SiteTree $page */
         $page = $area->getOwnerPage();
 
         $controllers = $area->ElementControllers();

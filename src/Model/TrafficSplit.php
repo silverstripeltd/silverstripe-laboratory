@@ -28,7 +28,7 @@ use SilverStripe\Versioned\Versioned;
  * @property int $EntryPage
  * @property int $VariationChoiceExpiry
  * @method SiteTree EntryPage()
- * @method HasManyList|ContentVariation[] ContentVariations()
+ * @method HasManyList<ContentVariation> ContentVariations()
  * @mixin Versioned
  */
 class TrafficSplit extends DataObject
