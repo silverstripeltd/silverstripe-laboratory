@@ -9,6 +9,7 @@ use DNADesign\Elemental\Models\ElementalArea;
 use DNADesign\Elemental\Models\ElementContent;
 use Exception;
 use Page;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension;
@@ -36,8 +37,8 @@ class ElementModelTest extends SapphireTest
      * @param array $expected
      * @return void
      * @throws Exception
-     * @dataProvider secondaryIdentifiersElementsCasesProvider
      */
+    #[DataProvider('secondaryIdentifiersElementsCasesProvider')]
     public function testGetSecondaryVariationIdentifiersOnElements(bool $enabled, array $expected): void
     {
         TrafficSplitService::config()->set('element_variation_enabled', $enabled);
@@ -73,8 +74,8 @@ class ElementModelTest extends SapphireTest
      * @return void
      * @throws Exception
      * @throws NotFoundExceptionInterface
-     * @dataProvider trafficSplitElementCasesProvider
      */
+    #[DataProvider('trafficSplitElementCasesProvider')]
     public function testTrafficSplitOnElements(?string $identifier, bool $enabled, array $expected): void
     {
         TrafficSplitService::config()->set('element_variation_enabled', $enabled);

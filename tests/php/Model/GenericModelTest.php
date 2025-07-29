@@ -3,6 +3,7 @@
 namespace SilverStripe\Laboratory\Tests\Model;
 
 use Exception;
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Dev\SapphireTest;
