@@ -21,9 +21,10 @@ use SilverStripe\View\SSViewer;
 /**
  * Provides template methods for pages to output traffic split related JS code
  *
- * @method HasManyList|TrafficSplit[] LaboratoryTrafficSplits()
- * @method HasManyList|ContentVariation[] LaboratoryContentVariations()
- * @method SiteTree|$this getOwner()
+ * @method HasManyList<TrafficSplit> LaboratoryTrafficSplits()
+ * @method HasManyList<ContentVariation> LaboratoryContentVariations()
+ * @extends Extension<SiteTree>
+ * @extends Extension<TrafficSplitSiteTreeExtension>
  */
 class TrafficSplitSiteTreeExtension extends Extension
 {
@@ -59,6 +60,7 @@ class TrafficSplitSiteTreeExtension extends Extension
         $marker = $service->getTrafficSplitMarker();
         $contentVariations = $trafficSplit->ContentVariations();
 
+        /** @var ContentVariation $contentVariation */
         foreach ($contentVariations as $contentVariation) {
             // If we have a content variation identifier let's use it, otherwise fall back to content variation ID
             $markerValue = $contentVariation->VariationIdentifier ?: sprintf('cv-%d', $contentVariation->ID);
@@ -153,6 +155,7 @@ class TrafficSplitSiteTreeExtension extends Extension
     {
         $owner = $this->getOwner();
 
+        /** @var TrafficSplit $trafficSplit */
         foreach ($owner->LaboratoryTrafficSplits() as $trafficSplit) {
             if (!$trafficSplit->isPublished()) {
                 continue;

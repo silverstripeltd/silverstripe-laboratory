@@ -15,7 +15,8 @@ use SilverStripe\ORM\DataObject;
  * TODO refactor the code to be more DRY in relation with @see VariationIdentifierElementExtension
  *
  * @property string $LaboratoryVariationIdentifier
- * @method DataObject|$this getOwner()
+ * @extends Extension<DataObject>
+ * @extends Extension<VariationIdentifierModelExtension>
  */
 class VariationIdentifierModelExtension extends Extension
 {

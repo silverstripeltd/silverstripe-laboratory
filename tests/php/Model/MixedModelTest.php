@@ -8,6 +8,7 @@ use DNADesign\Elemental\Models\BaseElement;
 use DNADesign\Elemental\Models\ElementalArea;
 use DNADesign\Elemental\Models\ElementContent;
 use Exception;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension;
@@ -73,8 +74,8 @@ class MixedModelTest extends SapphireTest
      * @return void
      * @throws Exception
      * @throws NotFoundExceptionInterface
-     * @dataProvider trafficSplitElementCasesProvider
      */
+    #[DataProvider('trafficSplitElementCasesProvider')]
     public function testTrafficSplitOnElements(?string $identifier, array $expected): void
     {
         /** @var PageWithGenericModels|ElementalPageExtension $page */
@@ -152,8 +153,8 @@ class MixedModelTest extends SapphireTest
      * @param array $expected
      * @return void
      * @throws Exception
-     * @dataProvider trafficSplitModelCasesProvider
      */
+    #[DataProvider('trafficSplitModelCasesProvider')]
     public function testTrafficSplitOnGenericModels(?string $identifier, array $expected): void
     {
         /** @var PageWithGenericModels $page */

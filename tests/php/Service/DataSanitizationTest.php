@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Laboratory\Tests\Model;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
 
@@ -11,8 +12,8 @@ class DataSanitizationTest extends SapphireTest
      * @param string|null $data
      * @param string|null $expected
      * @return void
-     * @dataProvider sanitizationDataCasesProvider
      */
+    #[DataProvider('sanitizationDataCasesProvider')]
     public function testSanitiseVariationIdentifier(?string $data, ?string $expected): void
     {
         $value = TrafficSplitService::singleton()->sanitiseVariationIdentifier($data);

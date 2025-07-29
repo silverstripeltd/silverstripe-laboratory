@@ -3,6 +3,7 @@
 namespace SilverStripe\Laboratory\Tests\Model;
 
 use Exception;
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Dev\SapphireTest;
@@ -54,8 +55,8 @@ class GenericModelTest extends SapphireTest
      * @param array $expected
      * @return void
      * @throws Exception
-     * @dataProvider trafficSplitModelCasesProvider
      */
+    #[DataProvider('trafficSplitModelCasesProvider')]
     public function testTrafficSplitOnGenericModels(?string $identifier, array $expected): void
     {
         /** @var PageWithGenericModels $page */
