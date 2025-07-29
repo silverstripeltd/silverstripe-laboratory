@@ -33,9 +33,9 @@ use SilverStripe\Versioned\Versioned;
  */
 class TrafficSplit extends DataObject
 {
-    private const int MINIMUM_VARIATION_CHOICE_EXPIRY = 1;
-    private const int DEFAULT_VARIATION_CHOICE_EXPIRY = 30;
-    private const int MINIMUM_CONTENT_VARIATIONS = 2;
+    protected const int MINIMUM_VARIATION_CHOICE_EXPIRY = 1;
+    protected const int DEFAULT_VARIATION_CHOICE_EXPIRY = 30;
+    protected const int MINIMUM_CONTENT_VARIATIONS = 2;
     public const int TOTAL_PROBABILITY = 100;
 
     private static array $extensions = [

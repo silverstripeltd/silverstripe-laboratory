@@ -28,9 +28,9 @@ use SilverStripe\Versioned\Versioned;
  */
 class ContentVariation extends DataObject
 {
-    private const int MINIMUM_TRAFFIC_RATIO = 1;
-    private const int MAXIMUM_TRAFFIC_RATIO = 99;
-    private const int DEFAULT_TRAFFIC_RATIO = 50;
+    protected const int MINIMUM_TRAFFIC_RATIO = 1;
+    protected const int MAXIMUM_TRAFFIC_RATIO = 99;
+    protected const int DEFAULT_TRAFFIC_RATIO = 50;
 
     private static array $extensions = [
         Versioned::class,
@@ -136,7 +136,8 @@ class ContentVariation extends DataObject
             );
 
             $variationDescription = count($variationIdentifiersValues) > 0
-                ? 'Choose a specific content variation of the variation page.'
+                ? 'Choose a specific content variation of the variation page. '
+                . 'Primary variation does not need an identifier.'
                 : 'Your variation page has no variation identifiers set up.';
             $variationIdentifierField
                 ->setEmptyString('-- select --')

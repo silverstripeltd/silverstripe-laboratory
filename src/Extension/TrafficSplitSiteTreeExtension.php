@@ -2,14 +2,21 @@
 
 namespace SilverStripe\Laboratory\Extension;
 
+use Exception;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extension;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\Tab;
 use SilverStripe\Laboratory\Model\ContentVariation;
 use SilverStripe\Laboratory\Model\TrafficSplit;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
+use SilverStripe\View\SSViewer;
 
 /**
  * Provides template methods for pages to output traffic split related JS code
@@ -88,7 +95,61 @@ class TrafficSplitSiteTreeExtension extends Extension
         return sprintf($snippet, $payload);
     }
 
-    private function getActiveTrafficSplit(): ?TrafficSplit
+    /**
+     * Add laboratory content variations widget
+     *
+     * @param FieldList $actions
+     * @return void
+     * @throws Exception
+     */
+    protected function updateCMSActions(FieldList $actions): void
+    {
+        /** @var Tab $moreOptions */
+        $moreOptions = $actions->fieldByName('ActionMenus.MoreOptions');
+
+        // UI widget is not available so we don't have a container to add fields to
+        if (!$moreOptions) {
+            return;
+        }
+
+        $owner = $this->getOwner();
+        $service = TrafficSplitService::singleton();
+        $identifiers = $service->getSecondaryVariationIdentifiers($owner);
+
+        // The page has no secondary identifiers so there is nothing to display
+        if (count($identifiers) === 0) {
+            return;
+        }
+
+        // Generate content variation links
+        $marker = $service->getTrafficSplitMarker();
+        $pageUrl = $owner->AbsoluteLink();
+        $links = ArrayList::create();
+
+        foreach ($identifiers as $identifier) {
+            $markerSegment = sprintf('?%s=%s', $marker, $identifier);
+            $variationUrl = Controller::join_links($pageUrl, $markerSegment);
+            $links->push(ArrayData::create([
+                'Identifier' => $identifier,
+                'Link' => $variationUrl,
+            ]));
+        }
+
+        // Render the widget with a template
+        $widgetTemplate = SSViewer::get_templates_by_class(
+            $owner::class,
+            '_ContentVariationsWidget',
+            SiteTree::class
+        );
+        $content = $owner->customise([
+            'ContentVariationLinks' => $links,
+        ])->renderWith($widgetTemplate);
+
+        $contentVariationsLinksField = LiteralField::create('LaboratoryContentVariationLinks', $content);
+        $moreOptions->push($contentVariationsLinksField);
+    }
+
+    protected function getActiveTrafficSplit(): ?TrafficSplit
     {
         $owner = $this->getOwner();
 
@@ -103,7 +164,7 @@ class TrafficSplitSiteTreeExtension extends Extension
         return null;
     }
 
-    private function isCmsPreview(): bool
+    protected function isCmsPreview(): bool
     {
         $controller = Controller::curr();
 
@@ -126,7 +187,7 @@ class TrafficSplitSiteTreeExtension extends Extension
      * @param DBDatetime $expiry
      * @return string
      */
-    private function formatCookieExpiry(DBDatetime $expiry): string
+    protected function formatCookieExpiry(DBDatetime $expiry): string
     {
         $formatter = $expiry->getFormatter();
         $formatter->setPattern(DBDatetime::ISO_DATETIME_NORMALISED);
@@ -134,7 +195,7 @@ class TrafficSplitSiteTreeExtension extends Extension
         return $formatter->format($expiry->getTimestamp());
     }
 
-    private function getCodeTemplate(): string
+    protected function getCodeTemplate(): string
     {
         return <<<'HTML'
 <script type="text/javascript">
