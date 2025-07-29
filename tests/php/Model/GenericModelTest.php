@@ -54,8 +54,8 @@ class GenericModelTest extends SapphireTest
      * @param array $expected
      * @return void
      * @throws Exception
-     * @dataProvider trafficSplitModelCasesProvider
      */
+    #[DataProvider('trafficSplitModelCasesProvider')]
     public function testTrafficSplitOnGenericModels(?string $identifier, array $expected): void
     {
         /** @var PageWithGenericModels $page */
