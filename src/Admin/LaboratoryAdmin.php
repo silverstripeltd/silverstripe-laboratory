@@ -10,7 +10,7 @@ use SilverStripe\Laboratory\Model\TrafficSplit;
 
 class LaboratoryAdmin extends ModelAdmin
 {
-    private const string TRAFFIC_SPLIT_MANAGER_TAB = 'traffic-split-manager';
+    protected const string TRAFFIC_SPLIT_MANAGER_TAB = 'traffic-split-manager';
 
     private static string $url_segment = 'laboratory-admin';
 
@@ -19,7 +19,7 @@ class LaboratoryAdmin extends ModelAdmin
     private static string $menu_icon_class = 'font-icon-lamp';
 
     private static array $managed_models = [
-        self::TRAFFIC_SPLIT_MANAGER_TAB => [
+        LaboratoryAdmin::TRAFFIC_SPLIT_MANAGER_TAB => [
             'title' => 'Traffic splits manager',
             'dataClass' => TrafficSplit::class,
         ],
@@ -37,11 +37,11 @@ class LaboratoryAdmin extends ModelAdmin
         return parent::getGridField();
     }
 
-    private function applyTrafficSplitsManagerConfig(GridField $gridField): void
+    protected function applyTrafficSplitsManagerConfig(GridField $gridField): void
     {
         $modelTab = $this->modelTab;
 
-        if ($modelTab !== self::TRAFFIC_SPLIT_MANAGER_TAB) {
+        if ($modelTab !== LaboratoryAdmin::TRAFFIC_SPLIT_MANAGER_TAB) {
             return;
         }
 

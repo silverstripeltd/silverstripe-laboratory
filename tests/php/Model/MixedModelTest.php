@@ -13,7 +13,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Extension\TrafficSplitElementalAreaExtension;
 use SilverStripe\Laboratory\Extension\VariationIdentifierModelExtension;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 
 class MixedModelTest extends SapphireTest
 {
@@ -105,7 +105,7 @@ class MixedModelTest extends SapphireTest
         $this->assertSame($expectedBlocks, $list->column('Title'), 'We expect a specific list of blocks');
     }
 
-    public function trafficSplitElementCasesProvider(): array
+    public static function trafficSplitElementCasesProvider(): array
     {
         return [
             'no variation identifier' => [
@@ -175,7 +175,7 @@ class MixedModelTest extends SapphireTest
         $this->assertSame($expectedModels, $list->column('Title'), 'We expect a specific list of models');
     }
 
-    public function trafficSplitModelCasesProvider(): array
+    public static function trafficSplitModelCasesProvider(): array
     {
         return [
             'no variation identifier' => [

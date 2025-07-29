@@ -3,16 +3,16 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Forms\CompositeValidator;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\NumericField;
-use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Forms\Validation\CompositeValidator;
+use SilverStripe\Forms\Validation\RequiredFieldsValidator;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
@@ -33,9 +33,9 @@ use SilverStripe\Versioned\Versioned;
  */
 class TrafficSplit extends DataObject
 {
-    private const int MINIMUM_VARIATION_CHOICE_EXPIRY = 1;
-    private const int DEFAULT_VARIATION_CHOICE_EXPIRY = 30;
-    private const int MINIMUM_CONTENT_VARIATIONS = 2;
+    protected const int MINIMUM_VARIATION_CHOICE_EXPIRY = 1;
+    protected const int DEFAULT_VARIATION_CHOICE_EXPIRY = 30;
+    protected const int MINIMUM_CONTENT_VARIATIONS = 2;
     public const int TOTAL_PROBABILITY = 100;
 
     private static array $extensions = [
@@ -75,7 +75,7 @@ class TrafficSplit extends DataObject
 
     private static array $defaults = [
         'Title' => 'Traffic split',
-        'VariationChoiceExpiry' => self::DEFAULT_VARIATION_CHOICE_EXPIRY,
+        'VariationChoiceExpiry' => TrafficSplit::DEFAULT_VARIATION_CHOICE_EXPIRY,
     ];
 
     private static array $summary_fields = [
@@ -114,11 +114,12 @@ class TrafficSplit extends DataObject
 
             $variationChoiceField
                 ->setHTML5(true)
-                ->setAttribute('min', self::MINIMUM_VARIATION_CHOICE_EXPIRY)
-                ->setAttribute('placeholder', self::DEFAULT_VARIATION_CHOICE_EXPIRY)
+                ->setAttribute('min', TrafficSplit::MINIMUM_VARIATION_CHOICE_EXPIRY)
+                ->setAttribute('placeholder', TrafficSplit::DEFAULT_VARIATION_CHOICE_EXPIRY)
                 ->setDescription(
-                    'Defines the duration of the traffic split content variation choice for website visitor. '
-                    . 'This setting should roughly match the duration of the experimentation period for a particular test.'
+                    'Defines the duration of the traffic split content variation choice '
+                    . 'for website visitor. This setting should roughly match the duration '
+                    . 'of the experimentation period for a particular test.'
                 )
             ;
 
@@ -152,7 +153,7 @@ class TrafficSplit extends DataObject
         $this->beforeExtending(
             'updateCMSCompositeValidator',
             function (CompositeValidator $compositeValidator): void {
-                $validator = RequiredFields::create([
+                $validator = RequiredFieldsValidator::create([
                     'Title',
                     'VariationChoiceExpiry',
                     'EntryPageID',
@@ -195,8 +196,6 @@ class TrafficSplit extends DataObject
             }
 
             $publishedAt = $trafficSplit->LastEdited;
-
-            /** @var DBDatetime $publishDate */
             $publishDate = DBDatetime::create_field('Datetime', $publishedAt);
             $publishDate->modify(sprintf('+%d day', $this->VariationChoiceExpiry));
 
@@ -221,7 +220,8 @@ class TrafficSplit extends DataObject
 
         if ($isTrafficSplitPublished && $entryPage->exists()) {
             return sprintf(
-                '<p class="message good">Traffic split is active at <a href="%s" target="_blank">%s</a> page and the activation ends on %s</p>',
+                '<p class="message good">Traffic split is active at '
+                . '<a href="%s" target="_blank">%s</a> page and the activation ends on %s</p>',
                 $entryPage->AbsoluteLink(),
                 $entryPage->Title,
                 $this->getActivationEndDate()->Nice()
@@ -240,7 +240,7 @@ class TrafficSplit extends DataObject
 
         $contentVariations = $this->ContentVariations();
 
-        if ($contentVariations->count() < self::MINIMUM_CONTENT_VARIATIONS) {
+        if ($contentVariations->count() < TrafficSplit::MINIMUM_CONTENT_VARIATIONS) {
             return '<p class="message warning">Traffic split needs to have at least two content variations</p>';
         }
 
@@ -250,7 +250,7 @@ class TrafficSplit extends DataObject
             return sprintf(
                 '<p class="message warning">Traffic split needs to have a balanced probability distribution '
                 . '(sum of probabilities across all content variations has to be %d, current value is %d)</p>',
-                self::TOTAL_PROBABILITY,
+                TrafficSplit::TOTAL_PROBABILITY,
                 $totalProbability,
             );
         }
@@ -280,7 +280,7 @@ class TrafficSplit extends DataObject
             return false;
         }
 
-        $trafficSplits = self::get()
+        $trafficSplits = TrafficSplit::get()
             ->filter([
                 // Looking for specific entry page to validate
                 'EntryPageID' => $entryPage->ID,
@@ -316,7 +316,7 @@ class TrafficSplit extends DataObject
         }
 
         // Not enough content variations (need at least two for a traffic split)
-        if ($contentVariations->count() < self::MINIMUM_CONTENT_VARIATIONS) {
+        if ($contentVariations->count() < TrafficSplit::MINIMUM_CONTENT_VARIATIONS) {
             return false;
         }
 
@@ -347,7 +347,7 @@ class TrafficSplit extends DataObject
     {
         $totalProbability = $this->getTotalProbability();
 
-        return $totalProbability === self::TOTAL_PROBABILITY;
+        return $totalProbability === TrafficSplit::TOTAL_PROBABILITY;
     }
 
     private function getTotalProbability(): int

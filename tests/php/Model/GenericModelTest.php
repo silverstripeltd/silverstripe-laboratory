@@ -3,6 +3,8 @@
 namespace SilverStripe\Laboratory\Tests\Model;
 
 use Exception;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Extensible;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Extension\VariationIdentifierModelExtension;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
@@ -75,7 +77,7 @@ class GenericModelTest extends SapphireTest
         $this->assertSame($expectedModels, $list->column('Title'), 'We expect a specific list of models');
     }
 
-    public function trafficSplitModelCasesProvider(): array
+    public static function trafficSplitModelCasesProvider(): array
     {
         return [
             'no variation identifier' => [

@@ -7,9 +7,9 @@ use DNADesign\Elemental\Models\ElementalArea;
 use Exception;
 use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Extension;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
-use SilverStripe\ORM\SS_List;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Model\List\SS_List;
 
 /**
  * Provide the capability to render content variations

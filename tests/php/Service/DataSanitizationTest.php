@@ -26,7 +26,7 @@ class DataSanitizationTest extends SapphireTest
         $this->assertEquals($expected, $value, 'We expect a specific identifier value');
     }
 
-    public function sanitizationDataCasesProvider(): array
+    public static function sanitizationDataCasesProvider(): array
     {
         return [
             'null value' => [

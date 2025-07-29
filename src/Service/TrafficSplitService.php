@@ -12,9 +12,10 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Resettable;
 use SilverStripe\Laboratory\Extension\VariationIdentifierElementExtension;
 use SilverStripe\Laboratory\Extension\VariationIdentifierModelExtension;
+use SilverStripe\Laboratory\Tests\Model\GenericContentModel;
+use SilverStripe\Model\List\SS_List;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
-use SilverStripe\ORM\SS_List;
 
 /**
  * Traffic split content variation handling
@@ -60,7 +61,7 @@ class TrafficSplitService implements Resettable
 
     public static function reset(): void
     {
-        self::singleton()->clearData();
+        TrafficSplitService::singleton()->clearData();
     }
 
     public function getTrafficSplitMarker(): string
@@ -88,14 +89,14 @@ class TrafficSplitService implements Resettable
         return $this->contentVariationIdentifier;
     }
 
-    public function setContentVariationIdentifier(string $contentVariationIdentifier): self
+    public function setContentVariationIdentifier(string $contentVariationIdentifier): TrafficSplitService
     {
         $this->contentVariationIdentifier = $contentVariationIdentifier;
 
         return $this;
     }
 
-    public function clearData(): self
+    public function clearData(): TrafficSplitService
     {
         $this->contentVariationIdentifier = '';
         $this->validIdentifiers = [];
@@ -210,7 +211,7 @@ class TrafficSplitService implements Resettable
      * @param string $identifier
      * @return SS_List
      */
-    private function filterControllers(SS_List $controllers, string $identifier): SS_List
+    protected function filterControllers(SS_List $controllers, string $identifier): SS_List
     {
         return $controllers->filterByCallback(
             function (ElementController $controller) use ($identifier): bool {
@@ -235,11 +236,11 @@ class TrafficSplitService implements Resettable
     /**
      * Filter down models to only those which are relevant for our content variation
      *
-     * @param SS_List $controllers
+     * @param SS_List $list
      * @param string $identifier
      * @return SS_List
      */
-    private function filterList(SS_List $list, string $identifier): SS_List
+    protected function filterList(SS_List $list, string $identifier): SS_List
     {
         $dataClass = $list->dataClass();
 
@@ -277,7 +278,7 @@ class TrafficSplitService implements Resettable
      * @return array
      * @throws Exception
      */
-    private function getValidIdentifiers(SiteTree $page): array
+    protected function getValidIdentifiers(SiteTree $page): array
     {
         $cacheKey = $page->getUniqueKey();
 
@@ -288,7 +289,7 @@ class TrafficSplitService implements Resettable
         return $this->validIdentifiers[$cacheKey];
     }
 
-    private function findValidIdentifiers(SiteTree $page): array
+    protected function findValidIdentifiers(SiteTree $page): array
     {
         // Initially add any identifiers from regular content blocks (if present)
         $identifiers = $this->findValidIdentifiersFromBlockPage($page);
@@ -321,7 +322,7 @@ class TrafficSplitService implements Resettable
      * @param SiteTree|ElementalAreasExtension $page
      * @return array
      */
-    private function findValidIdentifiersFromBlockPage(SiteTree $page): array
+    protected function findValidIdentifiersFromBlockPage(SiteTree $page): array
     {
         $enabled = $this->getElementVariationEnabled();
 
@@ -368,7 +369,7 @@ class TrafficSplitService implements Resettable
         return $this->formatIdentifiers($identifiers);
     }
 
-    private function findValidIdentifiersFromList(SS_List $list): array
+    protected function findValidIdentifiersFromList(SS_List $list): array
     {
         $dataClass = $list->dataClass();
 
@@ -412,7 +413,7 @@ class TrafficSplitService implements Resettable
         return $this->formatIdentifiers($identifiers);
     }
 
-    private function unSerialiseIdentifierData(?string $identifier): array
+    protected function unSerialiseIdentifierData(?string $identifier): array
     {
         if (!$identifier) {
             return [];
@@ -421,7 +422,7 @@ class TrafficSplitService implements Resettable
         return explode(PHP_EOL, $identifier);
     }
 
-    private function serialiseIdentifierData(array $identifier): string
+    protected function serialiseIdentifierData(array $identifier): string
     {
         return implode(PHP_EOL, $identifier);
     }
@@ -432,7 +433,7 @@ class TrafficSplitService implements Resettable
      * @param string|null $identifier
      * @return string|null
      */
-    private function sanitiseIdentifier(?string $identifier): ?string
+    protected function sanitiseIdentifier(?string $identifier): ?string
     {
         if (!$identifier) {
             // Value is empty, so we can just bail out as there is nothing to sanitise
@@ -452,7 +453,7 @@ class TrafficSplitService implements Resettable
      * @param array $identifiers
      * @return array
      */
-    private function formatIdentifiers(array $identifiers): array
+    protected function formatIdentifiers(array $identifiers): array
     {
         // Sort identifiers & remove duplicates
         $identifiers = array_unique($identifiers);

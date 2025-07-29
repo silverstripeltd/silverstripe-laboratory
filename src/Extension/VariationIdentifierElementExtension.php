@@ -22,7 +22,7 @@ class VariationIdentifierElementExtension extends Extension
         'LaboratoryVariationIdentifier' => 'Text',
     ];
 
-    public function updateCMSFields(FieldList $fields): void
+    protected function updateCMSFields(FieldList $fields): void
     {
         // Remove scaffolded field
         $fields->removeByName([
@@ -48,7 +48,10 @@ class VariationIdentifierElementExtension extends Extension
             [
                 CompositeField::create([
                     HeaderField::create('LaboratoryVariationHeading', 'Laboratory settings'),
-                    $variationIdentifierField = TextareaField::create('LaboratoryVariationIdentifier', 'Variation identifier'),
+                    $variationIdentifierField = TextareaField::create(
+                        'LaboratoryVariationIdentifier',
+                        'Variation identifier'
+                    ),
                 ]),
             ],
         );
@@ -61,7 +64,7 @@ class VariationIdentifierElementExtension extends Extension
         );
     }
 
-    public function onBeforeWrite(): void
+    protected function onBeforeWrite(): void
     {
         $owner = $this->getOwner();
 

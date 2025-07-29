@@ -3,13 +3,13 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Forms\CompositeValidator;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\NumericField;
-use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Forms\Validation\CompositeValidator;
+use SilverStripe\Forms\Validation\RequiredFieldsValidator;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
@@ -28,9 +28,9 @@ use SilverStripe\Versioned\Versioned;
  */
 class ContentVariation extends DataObject
 {
-    private const int MINIMUM_TRAFFIC_RATIO = 1;
-    private const int MAXIMUM_TRAFFIC_RATIO = 99;
-    private const int DEFAULT_TRAFFIC_RATIO = 50;
+    protected const int MINIMUM_TRAFFIC_RATIO = 1;
+    protected const int MAXIMUM_TRAFFIC_RATIO = 99;
+    protected const int DEFAULT_TRAFFIC_RATIO = 50;
 
     private static array $extensions = [
         Versioned::class,
@@ -59,7 +59,7 @@ class ContentVariation extends DataObject
 
     private static array $defaults = [
         'Title' => 'Content variation',
-        'Probability' => self::DEFAULT_TRAFFIC_RATIO,
+        'Probability' => ContentVariation::DEFAULT_TRAFFIC_RATIO,
     ];
 
     private static array $summary_fields = [
@@ -119,16 +119,16 @@ class ContentVariation extends DataObject
             $message = sprintf(
                 'Probability of this content variation being selected for website visitors in percentage '
                 . 'points (%d to %d). The sum of all probabilities in this test is currently %d out of %d.',
-                self::MINIMUM_TRAFFIC_RATIO,
-                self::MAXIMUM_TRAFFIC_RATIO,
+                ContentVariation::MINIMUM_TRAFFIC_RATIO,
+                ContentVariation::MAXIMUM_TRAFFIC_RATIO,
                 $totalProbability,
                 TrafficSplit::TOTAL_PROBABILITY,
             );
             $probabilityField
                 ->setHTML5(true)
-                ->setAttribute('min', self::MINIMUM_TRAFFIC_RATIO)
-                ->setAttribute('max', self::MAXIMUM_TRAFFIC_RATIO)
-                ->setAttribute('placeholder', self::DEFAULT_TRAFFIC_RATIO)
+                ->setAttribute('min', ContentVariation::MINIMUM_TRAFFIC_RATIO)
+                ->setAttribute('max', ContentVariation::MAXIMUM_TRAFFIC_RATIO)
+                ->setAttribute('placeholder', ContentVariation::DEFAULT_TRAFFIC_RATIO)
                 ->setDescription($message);
 
             $variationPageField->setDescription(
@@ -136,7 +136,8 @@ class ContentVariation extends DataObject
             );
 
             $variationDescription = count($variationIdentifiersValues) > 0
-                ? 'Choose a specific content variation of the variation page.'
+                ? 'Choose a specific content variation of the variation page. '
+                . 'Primary variation does not need an identifier.'
                 : 'Your variation page has no variation identifiers set up.';
             $variationIdentifierField
                 ->setEmptyString('-- select --')
@@ -161,7 +162,7 @@ class ContentVariation extends DataObject
         $this->beforeExtending(
             'updateCMSCompositeValidator',
             function (CompositeValidator $compositeValidator): void {
-                $validator = RequiredFields::create([
+                $validator = RequiredFieldsValidator::create([
                     'Title',
                     'Probability',
                     'VariationPageID',
