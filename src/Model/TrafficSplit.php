@@ -82,6 +82,7 @@ class TrafficSplit extends DataObject
         'Title' => 'Title',
         'EntryPage.Title' => 'Entry page title',
         'ContentVariations.Count' => 'Content variations',
+        'getStatusSummary' => 'Status',
     ];
 
     public function getCMSFields(): FieldList
@@ -206,7 +207,7 @@ class TrafficSplit extends DataObject
     /**
      * Determine if any status needs to be communicated via a message
      *
-     * @return LiteralField|null
+     * @return string|null
      */
     private function getStatusMessage(): ?string
     {
@@ -264,6 +265,22 @@ class TrafficSplit extends DataObject
         }
 
         return null;
+    }
+
+    /**
+     * Intended for CMS UI (summary fields) use
+     *
+     * @return LiteralField|null
+     */
+    public function getStatusSummary(): ?LiteralField
+    {
+        $statusMessage = $this->getStatusMessage();
+
+        if (!$statusMessage) {
+            return null;
+        }
+
+        return LiteralField::create('StatusSummary', $statusMessage);
     }
 
     /**
