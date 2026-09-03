@@ -35,7 +35,7 @@ class GenericModelTest extends SapphireTest
     ];
 
     /**
-     * Just a test
+     * Just a test 123
      *
      * @return void
      * @throws Exception
