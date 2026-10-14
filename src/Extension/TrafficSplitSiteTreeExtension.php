@@ -227,20 +227,23 @@ class TrafficSplitSiteTreeExtension extends Extension
     if (!markerPresent) {
         // Parse cookies from raw data
         const cookieName = trafficSplitPayload.cookie;
-        const cookies = document.cookie.replace('; ', ';').split(';');
+        const cookies = document.cookie.split(';');
 
         // Search for a specific cookie
         let preselectedVariation = '';
 
         for (var i = 0; i < cookies.length; i++) {
-            const segment = cookies[i];
+            // Browsers separate cookies with "; ", so every entry after the first has a leading space
+            const segment = cookies[i].trim();
+            const separatorIndex = segment.indexOf('=');
 
             // Cookie is missing a value
-            if (!segment.search('=')) {
+            if (separatorIndex === -1) {
               continue;
             }
 
-            const [itemName, itemValue] = segment.split('=');
+            const itemName = segment.substring(0, separatorIndex);
+            const itemValue = segment.substring(separatorIndex + 1);
 
             // We are looking for a specific cookie
             if (itemName !== cookieName) {
