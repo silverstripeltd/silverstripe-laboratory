@@ -33,13 +33,6 @@ class VariationIdentifierModelExtension extends Extension
 
         $service = TrafficSplitService::singleton();
 
-        $primaryVariationName = $service->getElementPrimaryVariationName();
-        $primaryVariationMessage = sprintf(
-            'To use a block as a primary variation block, '
-            . 'please ensure to use "%s" as the variation identifier.',
-            $primaryVariationName
-        );
-
         $fields->addFieldsToTab(
             'Root.Settings',
             [
@@ -53,12 +46,7 @@ class VariationIdentifierModelExtension extends Extension
             ],
         );
 
-        $variationIdentifierField->setDescription(
-            'Values used for displaying content variations in the front end (newline separated list). '
-            . 'Only allow use of alphabet (lowercase), numbers, hyphen and underscore characters, '
-            . 'when left blank content variation feature is considered not in use for this block. '
-            . $primaryVariationMessage
-        );
+        $variationIdentifierField->setDescription($service->getVariationIdentifierFieldDescription());
     }
 
     public function onBeforeWrite(): void

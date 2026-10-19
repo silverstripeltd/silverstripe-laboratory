@@ -1,0 +1,51 @@
+DNADesign\Elemental\Models\ElementalArea:
+  block-area:
+    OwnerClassName: Page
+  plain-area:
+    OwnerClassName: Page
+
+Page:
+  block-page:
+    Title: 'Block page'
+    URLSegment: 'block-page'
+    ElementalArea: =>DNADesign\Elemental\Models\ElementalArea.block-area
+  plain-page:
+    Title: 'Plain page'
+    URLSegment: 'plain-page'
+    ElementalArea: =>DNADesign\Elemental\Models\ElementalArea.plain-area
+
+DNADesign\Elemental\Models\ElementContent:
+  primary-block:
+    Title: 'Primary block'
+    LaboratoryVariationIdentifier: 'primary'
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.block-area
+  secondary-block:
+    Title: 'Secondary block'
+    LaboratoryVariationIdentifier: 'secondary'
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.block-area
+  shared-block:
+    Title: 'Shared block'
+    Parent: =>DNADesign\Elemental\Models\ElementalArea.plain-area
+
+SilverStripe\Laboratory\Model\TrafficSplit:
+  traffic-split:
+    Title: 'Traffic split'
+    EntryPage: =>Page.block-page
+
+SilverStripe\Laboratory\Model\ContentVariation:
+  no-page:
+    Title: 'No page yet'
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split
+  plain-page-variation:
+    Title: 'Plain page variation'
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split
+    VariationPage: =>Page.plain-page
+  block-page-variation:
+    Title: 'Block page variation'
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split
+    VariationPage: =>Page.block-page
+  removed-identifier-variation:
+    Title: 'Removed identifier variation'
+    VariationIdentifier: 'retired'
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split
+    VariationPage: =>Page.plain-page

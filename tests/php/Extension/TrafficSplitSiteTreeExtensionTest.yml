@@ -1,0 +1,27 @@
+SilverStripe\CMS\Model\SiteTree:
+  entry-page:
+    Title: 'Entry page'
+    URLSegment: 'entry-page'
+  variation-page:
+    Title: 'Variation page'
+    URLSegment: 'variation-page'
+  unrelated-page:
+    Title: 'Unrelated page'
+    URLSegment: 'unrelated-page'
+
+SilverStripe\Laboratory\Model\TrafficSplit:
+  traffic-split:
+    Title: 'Page redesign test'
+    EntryPage: =>SilverStripe\CMS\Model\SiteTree.entry-page
+
+SilverStripe\Laboratory\Model\ContentVariation:
+  primary-variation:
+    Title: 'A: original'
+    Probability: 50
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split
+    VariationPage: =>SilverStripe\CMS\Model\SiteTree.entry-page
+  secondary-variation:
+    Title: 'B: redesign'
+    Probability: 50
+    Parent: =>SilverStripe\Laboratory\Model\TrafficSplit.traffic-split
+    VariationPage: =>SilverStripe\CMS\Model\SiteTree.variation-page

@@ -5,10 +5,12 @@ namespace SilverStripe\Laboratory\Extension;
 use Exception;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
+use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
+use SilverStripe\Laboratory\Admin\LaboratoryAdmin;
 use SilverStripe\Laboratory\Model\ContentVariation;
 use SilverStripe\Laboratory\Model\TrafficSplit;
 use SilverStripe\Laboratory\Service\TrafficSplitService;
@@ -35,6 +37,17 @@ class TrafficSplitSiteTreeExtension extends Extension
 
     private static array $casting = [
         'TrafficSplitSnippet' => 'HTMLFragment',
+    ];
+
+    /**
+     * Traffic splits are managed in the Laboratory admin only. Editing them from a page would bypass
+     * the split's own form and validation, so the page shows a read-only notice instead.
+     */
+    private static array $scaffold_cms_fields_settings = [
+        'ignoreRelations' => [
+            'LaboratoryTrafficSplits',
+            'LaboratoryContentVariations',
+        ],
     ];
 
     /**
@@ -95,6 +108,27 @@ class TrafficSplitSiteTreeExtension extends Extension
         $snippet = $this->getCodeTemplate();
 
         return sprintf($snippet, $payload);
+    }
+
+    /**
+     * Tell editors which traffic splits use this page, with a link to manage each one
+     *
+     * @param FieldList $fields
+     * @return void
+     */
+    protected function updateCMSFields(FieldList $fields): void
+    {
+        $notice = $this->getTrafficSplitNotice();
+
+        if (!$notice) {
+            return;
+        }
+
+        $fields->addFieldToTab(
+            'Root.Main',
+            LiteralField::create('LaboratoryTrafficSplitNotice', $notice),
+            'Title'
+        );
     }
 
     /**
@@ -165,6 +199,72 @@ class TrafficSplitSiteTreeExtension extends Extension
         }
 
         return null;
+    }
+
+    /**
+     * Traffic splits this page takes part in, keyed by traffic split ID, with the page's roles in each
+     *
+     * @return array<int, array{trafficSplit: TrafficSplit, roles: string[]}>
+     */
+    protected function getTrafficSplitRoles(): array
+    {
+        $owner = $this->getOwner();
+        $roles = [];
+
+        /** @var TrafficSplit $trafficSplit */
+        foreach ($owner->LaboratoryTrafficSplits() as $trafficSplit) {
+            $roles[$trafficSplit->ID]['trafficSplit'] = $trafficSplit;
+            $roles[$trafficSplit->ID]['roles'][] = 'entry page';
+        }
+
+        /** @var ContentVariation $contentVariation */
+        foreach ($owner->LaboratoryContentVariations() as $contentVariation) {
+            $trafficSplit = $contentVariation->Parent();
+
+            if (!$trafficSplit->exists()) {
+                continue;
+            }
+
+            $roles[$trafficSplit->ID]['trafficSplit'] = $trafficSplit;
+            $roles[$trafficSplit->ID]['roles'][] = sprintf('content variation "%s"', $contentVariation->Title);
+        }
+
+        return $roles;
+    }
+
+    /**
+     * Read-only CMS message listing the traffic splits this page takes part in
+     *
+     * @return string|null
+     */
+    protected function getTrafficSplitNotice(): ?string
+    {
+        $roles = $this->getTrafficSplitRoles();
+
+        if (count($roles) === 0) {
+            return null;
+        }
+
+        $admin = LaboratoryAdmin::singleton();
+        $items = [];
+
+        foreach ($roles as $role) {
+            /** @var TrafficSplit $trafficSplit */
+            $trafficSplit = $role['trafficSplit'];
+            $items[] = sprintf(
+                '<li><a href="%s">%s</a> (%s): this page is the %s</li>',
+                Convert::raw2att($admin->getCMSEditLinkForManagedDataObject($trafficSplit)),
+                Convert::raw2xml($trafficSplit->Title),
+                $trafficSplit->isPublished() ? 'running' : 'not running',
+                Convert::raw2xml(implode(' and ', $role['roles']))
+            );
+        }
+
+        return sprintf(
+            '<div class="message notice"><p>This page is part of an A/B test. '
+            . 'Change the test in the Laboratory section.</p><ul>%s</ul></div>',
+            implode('', $items)
+        );
     }
 
     protected function isCmsPreview(): bool

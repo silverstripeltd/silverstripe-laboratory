@@ -6,6 +6,7 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Forms\Validation\CompositeValidator;
@@ -135,26 +136,66 @@ class ContentVariation extends DataObject
                 'The page where the experiment is expected to redirect website visitors to for this content variation.'
             );
 
-            $variationDescription = count($variationIdentifiersValues) > 0
-                ? 'Choose a specific content variation of the variation page. '
-                . 'Primary variation does not need an identifier.'
-                : 'Your variation page has no variation identifiers set up.';
             $variationIdentifierField
-                ->setEmptyString('-- select --')
-                ->setDescription($variationDescription);
+                ->setEmptyString('None (primary content)')
+                ->setDescription(
+                    'Leave as "None" to show the blocks marked "primary" and the blocks without an identifier. '
+                    . 'Choose an identifier to show the blocks marked with it instead of the primary ones.'
+                );
 
-            if ($service->getElementVariationEnabled()) {
+            if (!$service->getElementVariationEnabled()) {
+                // Content variation within page feature is not enabled,
+                // change the field to read only as we don't need to interact with it
+                $variationIdentifierField->setRightTitle('Feature disabled');
+                $readOnlyVariationField = $variationIdentifierField->performReadonlyTransformation();
+                $fields->replaceField($variationIdentifierField->getName(), $readOnlyVariationField);
+
                 return;
             }
 
-            // Content variation within page feature is not enabled,
-            // change the field to read only as we don't need to interact with it
-            $variationIdentifierField->setRightTitle('Feature disabled');
-            $readOnlyVariationField = $variationIdentifierField->performReadonlyTransformation();
-            $fields->replaceField($variationIdentifierField->getName(), $readOnlyVariationField);
+            $savedIdentifier = $this->VariationIdentifier;
+
+            // Keep a saved identifier selectable after it has been removed from the page's blocks
+            if ($savedIdentifier && !array_key_exists($savedIdentifier, $variationIdentifiersValues)) {
+                $variationIdentifiersValues[$savedIdentifier] = sprintf(
+                    '%s (not found on the variation page)',
+                    $savedIdentifier
+                );
+                $variationIdentifierField->setSource($variationIdentifiersValues);
+            }
+
+            if (count($variationIdentifiersValues) > 0) {
+                return;
+            }
+
+            // Nothing to choose from: explain why instead of showing an empty dropdown
+            $fields->replaceField(
+                $variationIdentifierField->getName(),
+                ReadonlyField::create('VariationIdentifierInfo', 'Variation identifier', 'None (primary content)')
+                    ->setDescription($this->getMissingIdentifiersMessage($variationPage->exists()))
+            );
         });
 
         return parent::getCMSFields();
+    }
+
+    /**
+     * Explain why there are no variation identifiers to choose from
+     *
+     * @param bool $hasVariationPage
+     * @return string
+     */
+    protected function getMissingIdentifiersMessage(bool $hasVariationPage): string
+    {
+        if (!$hasVariationPage) {
+            return 'Choose a variation page and save. '
+                . 'The identifiers found on that page\'s blocks can then be chosen here.';
+        }
+
+        return 'The variation page has no blocks marked with a secondary identifier, '
+            . 'so this variation shows the whole page. That is expected when each variation is a separate page. '
+            . 'To test blocks on one page, add an identifier such as "secondary" under a block\'s Settings tab, '
+            . 'publish the page and come back here.';
     }
 
     public function getCMSCompositeValidator(): CompositeValidator
