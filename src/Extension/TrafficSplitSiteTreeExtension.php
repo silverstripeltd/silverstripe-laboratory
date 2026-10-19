@@ -111,6 +111,33 @@ class TrafficSplitSiteTreeExtension extends Extension
     }
 
     /**
+     * Point search engines at the entry page of a live traffic split.
+     *
+     * Visitors of the entry page are redirected to a variation URL (the same page with a query param,
+     * or a different page), and crawlers that run JavaScript are redirected too. Every URL in the test
+     * therefore declares the entry page as canonical, so search engines index one URL with one ranking.
+     *
+     * @param array $tags
+     * @return void
+     */
+    protected function updateMetaComponents(array &$tags): void
+    {
+        $entryPage = $this->getLiveTrafficSplitEntryPage();
+
+        if (!$entryPage) {
+            return;
+        }
+
+        $tags['canonical'] = [
+            'tag' => 'link',
+            'attributes' => [
+                'rel' => 'canonical',
+                'href' => $entryPage->AbsoluteLink(),
+            ],
+        ];
+    }
+
+    /**
      * Tell editors which traffic splits use this page, with a link to manage each one
      *
      * @param FieldList $fields
@@ -196,6 +223,38 @@ class TrafficSplitSiteTreeExtension extends Extension
             }
 
             return $trafficSplit;
+        }
+
+        return null;
+    }
+
+    /**
+     * Entry page of the live traffic split this page takes part in, either as its entry page
+     * or as one of its variation pages
+     *
+     * @return SiteTree|null
+     */
+    protected function getLiveTrafficSplitEntryPage(): ?SiteTree
+    {
+        $owner = $this->getOwner();
+
+        if ($this->getActiveTrafficSplit()) {
+            return $owner;
+        }
+
+        /** @var ContentVariation $contentVariation */
+        foreach ($owner->LaboratoryContentVariations() as $contentVariation) {
+            $trafficSplit = $contentVariation->Parent();
+
+            if (!$trafficSplit->exists() || !$trafficSplit->isPublished()) {
+                continue;
+            }
+
+            $entryPage = $trafficSplit->EntryPage();
+
+            if ($entryPage->exists()) {
+                return $entryPage;
+            }
         }
 
         return null;

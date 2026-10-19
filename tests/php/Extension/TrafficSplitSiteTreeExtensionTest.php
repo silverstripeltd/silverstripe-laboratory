@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Laboratory\Extension\TrafficSplitSiteTreeExtension;
+use SilverStripe\Laboratory\Model\TrafficSplit;
 
 class TrafficSplitSiteTreeExtensionTest extends SapphireTest
 {
@@ -73,5 +74,53 @@ class TrafficSplitSiteTreeExtensionTest extends SapphireTest
                 null,
             ],
         ];
+    }
+
+    public function testNoCanonicalTagWhileTrafficSplitIsNotRunning(): void
+    {
+        $page = $this->objFromFixture(SiteTree::class, 'variation-page');
+
+        $this->assertArrayNotHasKey('canonical', $page->MetaComponents());
+    }
+
+    /**
+     * @param string $page
+     * @return void
+     */
+    #[DataProvider('canonicalPageProvider')]
+    public function testRunningTrafficSplitPagesAreCanonicalToTheEntryPage(string $page): void
+    {
+        $this->publishTrafficSplit();
+        $entryPage = $this->objFromFixture(SiteTree::class, 'entry-page');
+
+        $tags = $this->objFromFixture(SiteTree::class, $page)->MetaComponents();
+
+        $this->assertSame('canonical', $tags['canonical']['attributes']['rel']);
+        $this->assertSame($entryPage->AbsoluteLink(), $tags['canonical']['attributes']['href']);
+    }
+
+    public static function canonicalPageProvider(): array
+    {
+        return [
+            'entry page' => ['entry-page'],
+            'variation page' => ['variation-page'],
+        ];
+    }
+
+    public function testUnrelatedPageHasNoCanonicalTag(): void
+    {
+        $this->publishTrafficSplit();
+        $page = $this->objFromFixture(SiteTree::class, 'unrelated-page');
+
+        $this->assertArrayNotHasKey('canonical', $page->MetaComponents());
+    }
+
+    private function publishTrafficSplit(): void
+    {
+        foreach (['entry-page', 'variation-page'] as $page) {
+            $this->objFromFixture(SiteTree::class, $page)->publishRecursive();
+        }
+
+        $this->objFromFixture(TrafficSplit::class, 'traffic-split')->publishRecursive();
     }
 }
