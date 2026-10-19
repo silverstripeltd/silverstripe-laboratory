@@ -98,4 +98,30 @@ class TrafficSplitTest extends SapphireTest
             'Variation page has content variations'
         );
     }
+
+    public function testActiveStatusLinksToTheEntryPageOnTheWebsiteAndInTheCms(): void
+    {
+        /** @var SiteTree $entryPage */
+        $entryPage = $this->objFromFixture(SiteTree::class, 'entry-page1');
+
+        /** @var TrafficSplit $trafficSplit */
+        $trafficSplit = $this->objFromFixture(TrafficSplit::class, 'traffic-split1');
+
+        foreach (['entry-page1', 'variation-page1', 'variation-page2'] as $page) {
+            $this->objFromFixture(SiteTree::class, $page)->publishRecursive();
+        }
+
+        $trafficSplit->publishRecursive();
+        $status = $trafficSplit->getStatusSummary()->getContent();
+
+        $this->assertStringContainsString('Traffic split is active at the "Entry page 1" page', $status);
+        $this->assertStringContainsString(
+            sprintf('<a href="%s" target="_blank" rel="noopener">public page</a>', $entryPage->AbsoluteLink()),
+            $status
+        );
+        $this->assertStringContainsString(
+            sprintf('<a href="%s">edit in CMS</a>', $entryPage->getCMSEditLink()),
+            $status
+        );
+    }
 }

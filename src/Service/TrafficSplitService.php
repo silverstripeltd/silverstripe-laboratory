@@ -84,6 +84,25 @@ class TrafficSplitService implements Resettable
         return (string) $this->config()->get('element_primary_variation_name');
     }
 
+    /**
+     * CMS help text for the variation identifier field on blocks and other content models
+     *
+     * @return string
+     */
+    public function getVariationIdentifierFieldDescription(): string
+    {
+        return sprintf(
+            'Leave blank to show this to every visitor. '
+            . 'Enter "%1$s" to show it only in the primary (original) version of the page, which is also '
+            . 'what visitors without a variation and search engines see. '
+            . 'Enter any other word, such as "secondary", to show it only to visitors of that variation: '
+            . 'once published it no longer appears on the normal page. '
+            . 'Marking a block does not start a test; set up a traffic split in the Laboratory section. '
+            . 'One identifier per line, using lowercase letters, numbers, hyphens and underscores.',
+            $this->getElementPrimaryVariationName()
+        );
+    }
+
     public function getContentVariationIdentifier(): string
     {
         return $this->contentVariationIdentifier;
