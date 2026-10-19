@@ -3,6 +3,7 @@
 namespace SilverStripe\Laboratory\Model;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
@@ -221,10 +222,10 @@ class TrafficSplit extends DataObject
 
         if ($isTrafficSplitPublished && $entryPage->exists()) {
             return sprintf(
-                '<p class="message good">Traffic split is active at '
-                . '<a href="%s" target="_blank">%s</a> page and the activation ends on %s</p>',
-                $entryPage->AbsoluteLink(),
-                $entryPage->Title,
+                '<p class="message good">Traffic split is active at the "%s" page (%s) '
+                . 'and the activation ends on %s</p>',
+                Convert::raw2xml($entryPage->Title),
+                $this->getEntryPageLinks($entryPage),
                 $this->getActivationEndDate()->Nice()
             );
         }
@@ -265,6 +266,29 @@ class TrafficSplit extends DataObject
         }
 
         return null;
+    }
+
+    /**
+     * Links to the entry page on the website and to its edit form in the CMS
+     *
+     * @param SiteTree $entryPage
+     * @return string
+     */
+    private function getEntryPageLinks(SiteTree $entryPage): string
+    {
+        $links = [
+            sprintf(
+                '<a href="%s" target="_blank" rel="noopener">public page</a>',
+                Convert::raw2att($entryPage->AbsoluteLink())
+            ),
+        ];
+        $editLink = $entryPage->getCMSEditLink();
+
+        if ($editLink) {
+            $links[] = sprintf('<a href="%s">edit in CMS</a>', Convert::raw2att($editLink));
+        }
+
+        return implode(' | ', $links);
     }
 
     /**
